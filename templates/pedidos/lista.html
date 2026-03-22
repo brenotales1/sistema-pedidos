@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="top-bar">
+<input class="input-busca" type="text" placeholder="🔍 Buscar pedido">
+<a href="/pedidos/novo" class="btn">+ Realizar Pedido</a>
+</div>
+
+
+
+<table>
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Cliente</th>
+<th>Material</th>
+<th>Status</th>
+<th>Valor</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for pedido in pedidos %}
+
+<tr>
+<td>{{ pedido.id }}</td>
+<td>{{ pedido.cliente }}</td>
+<td>{{ pedido.material }}</td>
+<td>{{ pedido.status }}</td>
+<td>R$ {{ pedido.valor }}</td>
+<td>👁</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+{% endblock %}
