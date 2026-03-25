@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/detalhe.css') }}">
+
+<h2>Pedido #{{ pedido.id }}</h2>
+
+<div class="card">
+
+<p><strong>Cliente:</strong> {{ pedido.cliente }}</p>
+
+<p>
+<strong>Status:</strong>
+<select>
+<option>Pendente</option>
+<option>Produção</option>
+<option>Finalizado</option>
+</select>
+</p>
+
+    <p><strong>Data:</strong> {{ pedido.data }}</p>
+
+<hr>
+
+<p><strong>Material:</strong> {{ pedido.material }}</p>
+<p><strong>Tipo:</strong> {{ pedido.tipo }}</p>
+
+<p><strong>Largura:</strong> {{ pedido.largura }}</p>
+<p><strong>Altura:</strong> {{ pedido.altura }}</p>
+
+<p><strong>Unidade:</strong> {{ pedido.unidade }}</p>
+
+<p><strong>Quantidade:</strong> {{ pedido.quantidade }}</p>
+
+<hr>
+
+<p><strong>Arquivo:</strong></p>
+
+<button class="btn-sec">Visualizar</button>
+<button class="btn-sec">Trocar arquivo</button>
+
+<hr>
+
+<div class="total-box">
+
+<p>Área: {{ pedido.area }} m²</p>
+
+<p>Preço m²: R$ {{ pedido.preco_m2 }}</p>
+
+<p class="total">Total: R$ {{ pedido.total }}</p>
+
+</div>
+
+<hr>
+
+<button class="btn">Editar</button>
+<button class="btn">Salvar</button>
+<button class="btn-sec">Excluir</button>
+
+<a href="/pedidos" class="btn-cancelar">Voltar</a>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/clientes.css') }}">
+
+<h2>Clientes</h2>
+
+<div class="top-bar">
+<a href="#" class="btn">+ Novo Cliente</a>
+</div>
+
+<table class="tabela-clientes">
+
+<thead>
+<tr>
+<th>Nome</th>
+<th>Telefone</th>
+<th>Empresa</th>
+<th>Editar</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for cliente in clientes %}
+
+<tr>
+
+<td>{{ cliente.nome }}</td>
+<td>{{ cliente.telefone }}</td>
+<td>{{ cliente.empresa }}</td>
+<td>✏️</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+{% endblock %}

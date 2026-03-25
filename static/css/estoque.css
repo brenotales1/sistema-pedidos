@@ -1,0 +1,43 @@
+.tabela-estoque{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.tabela-estoque th,
+.tabela-estoque td{
+    padding:12px;
+    border-bottom:1px solid #ddd;
+    text-align:left;
+}
+
+.tabela-estoque th{
+    background:#ecf0f1;
+}
+
+.tabela-estoque tr:hover{
+    background:#f5f5f5;
+}
+
+.alerta-baixo{
+    color:#e67e22;
+    font-weight:bold;
+}
+
+.alerta-ok{
+    color:#27ae60;
+    font-weight:bold;
+}
+
+.btn{
+    background:#27ae60;
+    color:white;
+    padding:8px 15px;
+    text-decoration:none;
+    border-radius:4px;
+}
+
+.btn:hover{
+    background:#1e8449;
+}

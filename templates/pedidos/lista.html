@@ -31,7 +31,7 @@
 <td>{{ pedido.material }}</td>
 <td>{{ pedido.status }}</td>
 <td>R$ {{ pedido.valor }}</td>
-<td>👁</td>
+<td><a href="/pedidos/{{ pedido.id }}">👁</a></td>
 </tr>
 
 {% endfor %}

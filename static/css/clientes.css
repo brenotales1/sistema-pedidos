@@ -1,0 +1,33 @@
+.tabela-clientes{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.tabela-clientes th,
+.tabela-clientes td{
+    padding:12px;
+    border-bottom:1px solid #ddd;
+}
+
+.tabela-clientes th{
+    background:#ecf0f1;
+    text-align:left;
+}
+
+.tabela-clientes tr:hover{
+    background:#f7f7f7;
+}
+
+.btn{
+    background:#27ae60;
+    color:white;
+    padding:8px 15px;
+    text-decoration:none;
+    border-radius:4px;
+}
+
+.btn:hover{
+    background:#1e8449;
+}

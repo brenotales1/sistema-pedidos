@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/estoque.css') }}">
+
+<h2>Estoque</h2>
+
+<table class="tabela-estoque">
+
+<thead>
+
+<tr>
+<th>Material</th>
+<th>Disponível (m²)</th>
+<th>Perda (%)</th>
+<th>Alerta</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for item in materiais %}
+
+<tr>
+
+<td>{{ item.material }}</td>
+<td>{{ item.disponivel }}</td>
+<td>{{ item.perda }}</td>
+
+<td>
+{% if item.alerta == "baixo" %}
+<span class="alerta-baixo">⚠️ Baixo</span>
+{% else %}
+<span class="alerta-ok">OK</span>
+{% endif %}
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+<br>
+
+<a href="#" class="btn">+ Adicionar Estoque</a>
+
+{% endblock %}
