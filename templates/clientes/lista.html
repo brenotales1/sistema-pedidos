@@ -7,7 +7,7 @@
 <h2>Clientes</h2>
 
 <div class="top-bar">
-<a href="#" class="btn">+ Novo Cliente</a>
+<a href="/clientes/novo" class="btn">+ Novo Cliente</a>
 </div>
 
 <table class="tabela-clientes">
@@ -30,7 +30,9 @@
 <td>{{ cliente.nome }}</td>
 <td>{{ cliente.telefone }}</td>
 <td>{{ cliente.empresa }}</td>
-<td>✏️</td>
+<td>
+<a href="/clientes/{{ cliente.id }}/editar">✏️</a>
+</td>
 
 </tr>
 

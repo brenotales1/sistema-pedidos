@@ -12,3 +12,7 @@ def lista_estoque():
     ]
 
     return render_template("estoque/lista.html", materiais=materiais)
+
+@estoque_bp.route("/estoque/novo")
+def novo_estoque():
+    return render_template("estoque/novo.html")
