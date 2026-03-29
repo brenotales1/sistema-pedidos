@@ -8,57 +8,32 @@
 
 <div class="card">
 
-<p><strong>Cliente:</strong> {{ pedido.cliente }}</p>
-
-<p>
-<strong>Status:</strong>
-<select>
-<option>Pendente</option>
-<option>Produção</option>
-<option>Finalizado</option>
-</select>
-</p>
-
-    <p><strong>Data:</strong> {{ pedido.data }}</p>
+<p><strong>Cliente:</strong> {{ pedido.cliente_nome }}</p>
+<p><strong>Status:</strong> {{ pedido.status }}</p>
+<p><strong>Data:</strong> {{ criado_em }}</p>
 
 <hr>
 
-<p><strong>Material:</strong> {{ pedido.material }}</p>
-<p><strong>Tipo:</strong> {{ pedido.tipo }}</p>
-
-<p><strong>Largura:</strong> {{ pedido.largura }}</p>
-<p><strong>Altura:</strong> {{ pedido.altura }}</p>
-
-<p><strong>Unidade:</strong> {{ pedido.unidade }}</p>
-
+<p><strong>Categoria:</strong> {{ pedido.categoria }}</p>
+<p><strong>Material:</strong> {{ pedido.material_nome }}</p>
+<p><strong>Largura informada:</strong> {{ largura_pedido }}</p>
+<p><strong>Altura informada:</strong> {{ altura_pedido }}</p>
+<p><strong>Unidade:</strong> {{ pedido.unidade_medida }}</p>
 <p><strong>Quantidade:</strong> {{ pedido.quantidade }}</p>
 
 <hr>
 
-<p><strong>Arquivo:</strong></p>
-
-<button class="btn-sec">Visualizar</button>
-<button class="btn-sec">Trocar arquivo</button>
-
-<hr>
-
 <div class="total-box">
-
-<p>Área: {{ pedido.area }} m²</p>
-
-<p>Preço m²: R$ {{ pedido.preco_m2 }}</p>
-
-<p class="total">Total: R$ {{ pedido.total }}</p>
-
+<p><strong>Bobina selecionada:</strong> {{ largura_rolo_usada }}</p>
+<p><strong>Orientação usada:</strong> {{ pedido.orientacao }}</p>
+<p><strong>Área total:</strong> {{ area_total }}</p>
+<p><strong>Metros descontados do estoque:</strong> {{ metros_consumidos }}</p>
 </div>
 
-<hr>
-
-<button class="btn">Editar</button>
-<button class="btn">Salvar</button>
-<button class="btn-sec">Excluir</button>
-
-<a href="/pedidos" class="btn-cancelar">Voltar</a>
+<div class="acoes">
+<a href="/pedidos/{{ pedido.id }}/editar" class="btn">Editar pedido</a>
+<a href="/pedidos" class="btn">Voltar para pedidos</a>
+</div>
 
 </div>
 

@@ -4,21 +4,36 @@
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/novo.css') }}">
 
-<h2>Novo Pedido</h2>
+<div class="pedido-page" id="pedido-page">
+<div class="pedido-main">
 
-<form class="form-pedido">
+<div class="pedido-header">
+<h2>{{ titulo_pagina }}</h2>
+{% if pedido %}
+<form method="post" action="/pedidos/{{ pedido.id }}/cancelar" onsubmit="return confirm('Deseja apagar/cancelar este pedido?');">
+<button type="submit" class="btn-danger">Apagar/Cancelar Pedido</button>
+</form>
+{% endif %}
+</div>
+
+{% if erro %}
+<p class="form-alert">{{ erro }}</p>
+{% endif %}
+
+<form class="form-pedido" method="post" action="{{ rota_submit }}">
 
 <div class="form-group">
 <label>Cliente</label>
 
 <div class="cliente-row">
-<select>
-<option>Selecionar</option>
-<option>João</option>
-<option>Maria</option>
+<select id="pedido-cliente" name="cliente" required>
+<option value="">Selecionar</option>
+{% for cliente in clientes %}
+<option value="{{ cliente }}" {% if form_data.cliente == cliente %}selected{% endif %}>{{ cliente }}</option>
+{% endfor %}
 </select>
 
-<button type="button" class="btn-sec">+ Novo Cliente</button>
+<button type="button" class="btn-sec" id="abrir-novo-cliente">+ Novo Cliente</button>
 </div>
 
 </div>
@@ -28,18 +43,18 @@
 
 <div>
 <label>Material</label>
-<select>
-<option>Adesivo</option>
-<option>Lona</option>
-<option>ACM</option>
+<select id="pedido-categoria" name="categoria" required>
+<option value="">Selecionar</option>
+{% for categoria in catalogo.keys() %}
+<option value="{{ categoria }}" {% if form_data.categoria == categoria %}selected{% endif %}>{{ categoria }}</option>
+{% endfor %}
 </select>
 </div>
 
 <div>
 <label>Tipo</label>
-<select>
-<option>Blackout</option>
-<option>Translúcido</option>
+<select id="pedido-tipo" name="tipo" data-selected="{{ form_data.tipo }}" required>
+<option value="">Selecione o material primeiro</option>
 </select>
 </div>
 
@@ -50,12 +65,12 @@
 
 <div>
 <label>Largura</label>
-<input type="number">
+<input type="number" id="pedido-largura" name="largura" step="0.01" min="0.01" value="{{ form_data.largura }}" required>
 </div>
 
 <div>
 <label>Altura</label>
-<input type="number">
+<input type="number" id="pedido-altura" name="altura" step="0.01" min="0.01" value="{{ form_data.altura }}" required>
 </div>
 
 </div>
@@ -67,8 +82,8 @@
 
 <div class="radio-group">
 
-<label><input type="radio" name="unidade"> cm</label>
-<label><input type="radio" name="unidade"> m</label>
+<label><input type="radio" name="unidade" value="cm" {% if form_data.unidade == "cm" %}checked{% endif %}> cm</label>
+<label><input type="radio" name="unidade" value="m" {% if form_data.unidade != "cm" %}checked{% endif %}> m</label>
 
 </div>
 
@@ -77,7 +92,7 @@
 
 <div class="form-group">
 <label>Quantidade</label>
-<input type="number" value="1">
+<input type="number" id="pedido-quantidade" name="quantidade" min="1" step="1" value="{{ form_data.quantidade or 1 }}" required>
 </div>
 
 
@@ -92,25 +107,315 @@
 <div class="resultado-box">
 
 <div>
-Área
-<strong>0.00 m²</strong>
+Área total
+<strong id="resultado-area">0,00 m²</strong>
 </div>
 
 <div>
-Valor
-<strong>R$ 0.00</strong>
+Consumo estimado
+<strong id="resultado-consumo">0,00m</strong>
 </div>
 
+<div>
+Bobina sugerida
+<strong id="resultado-bobina">Selecione um material</strong>
+</div>
+
+</div>
+
+<div class="sugestao-box" id="sugestao-box">
+<p><strong>Orientação:</strong> <span id="resultado-orientacao">Aguardando medidas</span></p>
+<p><strong>Medida usada na bobina:</strong> <span id="resultado-medida-bobina">-</span></p>
+<p><strong>Estoque após o pedido:</strong> <span id="resultado-estoque">-</span></p>
 </div>
 
 
 <div class="acoes">
 
-<button class="btn">Salvar Pedido</button>
-<a href="/pedidos" class="btn-cancelar">Cancelar</a>
+<button class="btn" type="submit">{{ texto_submit }}</button>
+<a href="{% if pedido %}/pedidos/{{ pedido.id }}{% else %}/pedidos{% endif %}" class="btn-cancelar">Cancelar</a>
 
 </div>
 
 </form>
+
+</div>
+
+<div class="drawer-backdrop" data-close-drawer></div>
+
+<aside class="cliente-drawer" aria-labelledby="cliente-drawer-title">
+<div class="drawer-header">
+<div>
+<p class="drawer-eyebrow">Cadastro rápido</p>
+<h3 id="cliente-drawer-title">Novo Cliente</h3>
+</div>
+<button type="button" class="drawer-close" data-close-drawer aria-label="Fechar painel">×</button>
+</div>
+
+<form class="form-cliente-inline">
+
+<div class="form-group">
+<label>Nome</label>
+<input type="text" id="novo-cliente-nome" placeholder="Digite o nome">
+</div>
+
+<div class="form-group">
+<label>Telefone</label>
+<input type="text" id="novo-cliente-telefone" placeholder="(11) 99999-9999">
+</div>
+
+<div class="form-group">
+<label>Empresa</label>
+<input type="text" id="novo-cliente-empresa" placeholder="Nome da empresa">
+</div>
+
+<div class="acoes drawer-actions">
+<button type="button" class="btn" id="salvar-cliente-inline">Salvar Cliente</button>
+<button type="button" class="btn-cancelar btn-link" data-close-drawer>Cancelar</button>
+</div>
+
+</form>
+</aside>
+</div>
+
+<script>
+const catalogo = {{ catalogo | tojson }};
+const pedidoPage = document.getElementById("pedido-page");
+const clienteSelect = document.getElementById("pedido-cliente");
+const categoriaSelect = document.getElementById("pedido-categoria");
+const tipoSelect = document.getElementById("pedido-tipo");
+const larguraInput = document.getElementById("pedido-largura");
+const alturaInput = document.getElementById("pedido-altura");
+const quantidadeInput = document.getElementById("pedido-quantidade");
+const unidadeInputs = document.querySelectorAll('input[name="unidade"]');
+const openDrawerButton = document.getElementById("abrir-novo-cliente");
+const closeDrawerButtons = document.querySelectorAll("[data-close-drawer]");
+const salvarClienteButton = document.getElementById("salvar-cliente-inline");
+const nomeClienteInput = document.getElementById("novo-cliente-nome");
+const telefoneClienteInput = document.getElementById("novo-cliente-telefone");
+const empresaClienteInput = document.getElementById("novo-cliente-empresa");
+
+function formatarMetros(valor) {
+    return valor.toFixed(2).replace(".", ",") + "m";
+}
+
+function formatarArea(valor) {
+    return valor.toFixed(2).replace(".", ",") + " m²";
+}
+
+function obterUnidadeSelecionada() {
+    const checked = Array.from(unidadeInputs).find((input) => input.checked);
+    return checked ? checked.value : "m";
+}
+
+function converterParaMetros(valor) {
+    if (!valor) {
+        return 0;
+    }
+
+    const numero = Number(valor);
+    if (Number.isNaN(numero)) {
+        return 0;
+    }
+
+    return obterUnidadeSelecionada() === "cm" ? Number((numero / 100).toFixed(2)) : Number(numero.toFixed(2));
+}
+
+function setDrawerState(open) {
+    pedidoPage.classList.toggle("drawer-open", open);
+}
+
+function popularTipos() {
+    const categoria = categoriaSelect.value;
+    const tipoSelecionado = tipoSelect.dataset.selected || "";
+    tipoSelect.innerHTML = "";
+
+    if (!categoria || !catalogo[categoria]) {
+        tipoSelect.innerHTML = '<option value="">Selecione o material primeiro</option>';
+        atualizarSugestao();
+        return;
+    }
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Selecionar";
+    tipoSelect.appendChild(placeholder);
+
+    Object.keys(catalogo[categoria]).forEach((tipo) => {
+        const option = document.createElement("option");
+        option.value = tipo;
+        option.textContent = tipo;
+        if (tipo === tipoSelecionado) {
+            option.selected = true;
+        }
+        tipoSelect.appendChild(option);
+    });
+
+    tipoSelect.dataset.selected = "";
+    atualizarSugestao();
+}
+
+function calcularSugestao() {
+    const categoria = categoriaSelect.value;
+    const tipo = tipoSelect.value;
+    const largura = converterParaMetros(larguraInput.value);
+    const altura = converterParaMetros(alturaInput.value);
+    const quantidade = Number(quantidadeInput.value || 0);
+    const areaTotal = Number((largura * altura * quantidade).toFixed(2));
+
+    if (!categoria || !tipo || largura <= 0 || altura <= 0 || quantidade <= 0) {
+        return null;
+    }
+
+    const variacoes = (catalogo[categoria] || {})[tipo] || [];
+    const candidatos = [];
+
+    variacoes.forEach((variacao) => {
+        const opcoes = [];
+
+        if (largura <= variacao.largura_m) {
+            opcoes.push({
+                orientacao: "Padrao",
+                metrosPorUnidade: altura,
+                medidaNaBobina: largura,
+            });
+        }
+
+        if (altura <= variacao.largura_m) {
+            opcoes.push({
+                orientacao: "Rotacionado",
+                metrosPorUnidade: largura,
+                medidaNaBobina: altura,
+            });
+        }
+
+        if (!opcoes.length) {
+            return;
+        }
+
+        opcoes.sort((a, b) => {
+            return (a.metrosPorUnidade - b.metrosPorUnidade)
+                || ((variacao.largura_m - a.medidaNaBobina) - (variacao.largura_m - b.medidaNaBobina))
+                || (variacao.largura_m - variacao.largura_m);
+        });
+
+        const melhorOpcao = opcoes[0];
+        const metrosConsumidos = Number((melhorOpcao.metrosPorUnidade * quantidade).toFixed(2));
+        const metrosRestantes = Number((variacao.metros_disponiveis - metrosConsumidos).toFixed(2));
+        const areaConsumida = Number((variacao.largura_m * metrosConsumidos).toFixed(2));
+        const desperdicioTotal = Number((areaConsumida - areaTotal).toFixed(2));
+
+        if (metrosRestantes < 0) {
+            return;
+        }
+
+        candidatos.push({
+            larguraRolo: variacao.largura_m,
+            metrosConsumidos: metrosConsumidos,
+            orientacao: melhorOpcao.orientacao,
+            medidaNaBobina: melhorOpcao.medidaNaBobina,
+            metrosRestantes: metrosRestantes,
+            areaConsumida: areaConsumida,
+            desperdicioTotal: desperdicioTotal,
+            sobraLargura: Number((variacao.largura_m - melhorOpcao.medidaNaBobina).toFixed(2)),
+        });
+    });
+
+    if (!candidatos.length) {
+        return null;
+    }
+
+    candidatos.sort((a, b) => {
+        return (a.desperdicioTotal - b.desperdicioTotal)
+            || (a.larguraRolo - b.larguraRolo)
+            || (a.metrosConsumidos - b.metrosConsumidos)
+            || (a.sobraLargura - b.sobraLargura);
+    });
+
+    return {
+        areaTotal: areaTotal,
+        ...candidatos[0],
+    };
+}
+
+function atualizarSugestao() {
+    const resultadoArea = document.getElementById("resultado-area");
+    const resultadoConsumo = document.getElementById("resultado-consumo");
+    const resultadoBobina = document.getElementById("resultado-bobina");
+    const resultadoOrientacao = document.getElementById("resultado-orientacao");
+    const resultadoMedidaBobina = document.getElementById("resultado-medida-bobina");
+    const resultadoEstoque = document.getElementById("resultado-estoque");
+
+    const sugestao = calcularSugestao();
+
+    if (!sugestao) {
+        resultadoArea.textContent = "0,00 m²";
+        resultadoConsumo.textContent = "0,00m";
+        resultadoBobina.textContent = "Sem combinação disponível";
+        resultadoOrientacao.textContent = "Confira medidas e estoque";
+        resultadoMedidaBobina.textContent = "-";
+        resultadoEstoque.textContent = "-";
+        return;
+    }
+
+    resultadoArea.textContent = formatarArea(sugestao.areaTotal);
+    resultadoConsumo.textContent = formatarMetros(sugestao.metrosConsumidos);
+    resultadoBobina.textContent = formatarMetros(sugestao.larguraRolo);
+    resultadoOrientacao.textContent = sugestao.orientacao;
+    resultadoMedidaBobina.textContent = formatarMetros(sugestao.medidaNaBobina);
+    resultadoEstoque.textContent = formatarMetros(sugestao.metrosRestantes);
+}
+
+openDrawerButton.addEventListener("click", function () {
+    setDrawerState(true);
+});
+
+closeDrawerButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+        setDrawerState(false);
+    });
+});
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        setDrawerState(false);
+    }
+});
+
+salvarClienteButton.addEventListener("click", function () {
+    const nomeCliente = nomeClienteInput.value.trim();
+
+    if (!nomeCliente) {
+        nomeClienteInput.focus();
+        return;
+    }
+
+    const clienteOption = document.createElement("option");
+    clienteOption.value = nomeCliente;
+    clienteOption.textContent = nomeCliente;
+    clienteSelect.appendChild(clienteOption);
+    clienteSelect.value = nomeCliente;
+
+    nomeClienteInput.value = "";
+    telefoneClienteInput.value = "";
+    empresaClienteInput.value = "";
+
+    setDrawerState(false);
+});
+
+categoriaSelect.addEventListener("change", function () {
+    tipoSelect.dataset.selected = "";
+    popularTipos();
+});
+
+tipoSelect.addEventListener("change", atualizarSugestao);
+larguraInput.addEventListener("input", atualizarSugestao);
+alturaInput.addEventListener("input", atualizarSugestao);
+quantidadeInput.addEventListener("input", atualizarSugestao);
+unidadeInputs.forEach((input) => input.addEventListener("change", atualizarSugestao));
+
+popularTipos();
+atualizarSugestao();
+</script>
 
 {% endblock %}

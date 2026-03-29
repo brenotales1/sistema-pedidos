@@ -3,7 +3,7 @@
     padding:25px;
     border-radius:6px;
     max-width:800px;
-    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+    box-shadow:0 2px 100px rgba(0,0,0,0.1);
 }
 
 .card p{
@@ -16,16 +16,6 @@
     border-top:1px solid #eee;
 }
 
-.card select{
-    padding:6px;
-}
-
-.arquivo-botoes{
-    display:flex;
-    gap:10px;
-    margin-top:5px;
-}
-
 .total-box{
     background:#f4f6f9;
     padding:15px;
@@ -34,13 +24,7 @@
 }
 
 .total-box p{
-    margin:5px 0;
-}
-
-.total-box .total{
-    font-size:22px;
-    font-weight:bold;
-    color:#27ae60;
+    margin:8px 0;
 }
 
 .acoes{

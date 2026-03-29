@@ -4,49 +4,57 @@
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/estoque.css') }}">
 
+<div class="estoque-header">
+<div>
 <h2>Estoque</h2>
+<p class="estoque-subtitle">Expanda um tipo para ver cada variação de largura, os rolos disponíveis e os metros restantes.</p>
+</div>
+<a href="/estoque/novo" class="btn">+ Cadastrar Material</a>
+</div>
+
+{% for secao in secoes %}
+<details class="estoque-secao" open>
+<summary>
+<span>{{ secao.categoria }}</span>
+<span>{{ secao.itens | length }} variações</span>
+</summary>
 
 <table class="tabela-estoque">
-
 <thead>
-
 <tr>
 <th>Material</th>
-<th>Disponível (m²)</th>
-<th>Perda (%)</th>
-<th>Alerta</th>
+<th>Largura</th>
+<th>Rolos</th>
+<th>Metros restantes</th>
+<th>Ações</th>
 </tr>
-
 </thead>
-
 <tbody>
-
-{% for item in materiais %}
-
+{% for item in secao.itens %}
 <tr>
-
-<td>{{ item.material }}</td>
-<td>{{ item.disponivel }}</td>
-<td>{{ item.perda }}</td>
-
+<td>{{ item.nome }}</td>
+<td>{{ item.largura }}</td>
+<td>{{ item.rolos }}</td>
+<td>{{ item.metros_restantes }}</td>
 <td>
-{% if item.alerta == "baixo" %}
-<span class="alerta-baixo">⚠️ Baixo</span>
-{% else %}
-<span class="alerta-ok">OK</span>
-{% endif %}
+<div class="acoes-estoque">
+<form method="post" action="/estoque/material/{{ item.id }}/adicionar-unidade">
+<button class="btn btn-small" type="submit">+ Unidade</button>
+</form>
+<form method="post" action="/estoque/material/{{ item.id }}/remover-unidade">
+<button class="btn-sec btn-small" type="submit">- Unidade</button>
+</form>
+</div>
 </td>
-
 </tr>
-
+{% endfor %}
+</tbody>
+</table>
+</details>
 {% endfor %}
 
-</tbody>
-
-</table>
-
-<br>
-
-<a href="/estoque/novo" class="btn">+ Adicionar Estoque</a>
+{% if not secoes %}
+<p>Nenhum material cadastrado no estoque.</p>
+{% endif %}
 
 {% endblock %}

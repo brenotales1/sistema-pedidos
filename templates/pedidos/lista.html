@@ -16,8 +16,9 @@
 <th>ID</th>
 <th>Cliente</th>
 <th>Material</th>
+<th>Bobina usada</th>
 <th>Status</th>
-<th>Valor</th>
+<th></th>
 </tr>
 </thead>
 
@@ -27,10 +28,10 @@
 
 <tr>
 <td>{{ pedido.id }}</td>
-<td>{{ pedido.cliente }}</td>
-<td>{{ pedido.material }}</td>
+<td>{{ pedido.cliente_nome }}</td>
+<td>{{ pedido.categoria }} • {{ pedido.material_nome }}</td>
+<td>{{ pedido.largura_rolo_formatada }}</td>
 <td>{{ pedido.status }}</td>
-<td>R$ {{ pedido.valor }}</td>
 <td><a href="/pedidos/{{ pedido.id }}">Visualizar</a></td>
 </tr>
 
