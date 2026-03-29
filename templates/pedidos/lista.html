@@ -3,11 +3,11 @@
 {% block content %}
 
 <div class="top-bar">
-<input class="input-busca" type="text" placeholder="🔍 Buscar pedido">
+<form method="get" action="/pedidos">
+<input class="input-busca" type="text" name="busca" value="{{ busca or '' }}" placeholder="Buscar por ID ou nome do cliente">
+</form>
 <a href="/pedidos/novo" class="btn">+ Realizar Pedido</a>
 </div>
-
-
 
 <table>
 
@@ -31,10 +31,16 @@
 <td>{{ pedido.material }}</td>
 <td>{{ pedido.status }}</td>
 <td>R$ {{ pedido.valor }}</td>
-<td><a href="/pedidos/{{ pedido.id }}">👁</a></td>
+<td><a href="/pedidos/{{ pedido.id }}">Visualizar</a></td>
 </tr>
 
 {% endfor %}
+
+{% if not pedidos %}
+<tr>
+<td colspan="6">Nenhum pedido encontrado para a busca informada.</td>
+</tr>
+{% endif %}
 
 </tbody>
 
