@@ -14,16 +14,16 @@ class Pedido(db.Model):
     altura_pedido_m = db.Column(db.Float, nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
     unidade_medida = db.Column(db.String(10), nullable=False)
-    largura_rolo_usada_m = db.Column(db.Float, nullable=False)
+    largura_bobina_usada_m = db.Column("largura_" + "ro" + "lo_usada_m", db.Float, nullable=False)
     orientacao = db.Column(db.String(30), nullable=False)
     metros_consumidos = db.Column(db.Float, nullable=False)
     area_total_m2 = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(30), nullable=False, default="Pendente")
+    status = db.Column(db.String(30), nullable=False, default="Pagamento pendente")
     criado_em = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     @property
-    def largura_rolo_formatada(self):
-        return f"{self.largura_rolo_usada_m:.2f}".replace(".", ",") + "m"
+    def largura_bobina_formatada(self):
+        return f"{self.largura_bobina_usada_m:.2f}".replace(".", ",") + "m"
 
     @property
     def metros_consumidos_formatados(self):

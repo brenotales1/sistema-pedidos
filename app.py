@@ -2,8 +2,9 @@ from flask import Flask
 from database.db import db
 from models.cliente import Cliente
 from models.material import Material
+from models.categoria_material import CategoriaMaterial
 from models.pedido import Pedido
-from models.rolo_estoque import RoloEstoque
+from models.bobina_estoque import BobinaEstoque
 
 from controllers.pedido_controller import pedido_bp
 from controllers.estoque_controller import estoque_bp
@@ -14,6 +15,7 @@ app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'dev'
 
 db.init_app(app)
 

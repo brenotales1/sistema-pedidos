@@ -16,9 +16,9 @@
 <label>Tipo</label>
 <select name="categoria" required>
 <option value="">Selecione</option>
-<option value="Adesivo">Adesivo</option>
-<option value="Lona">Lona</option>
-<option value="Tecido">Tecido</option>
+{% for categoria in categorias %}
+<option value="{{ categoria }}">{{ categoria }}</option>
+{% endfor %}
 </select>
 </div>
 
@@ -33,11 +33,11 @@
 </div>
 
 <div class="form-group">
-<label>Unidades iniciais</label>
+<label>Bobinas iniciais</label>
 <input type="number" name="unidades" min="1" step="1" value="1" required>
 </div>
 
-<p class="form-help">Cada unidade cadastrada cria um rolo com 50m disponíveis.</p>
+<p class="form-help">Cada unidade cadastrada cria uma bobina com 50m disponíveis.</p>
 
 <div class="acoes">
 <button class="btn" type="submit">Salvar</button>

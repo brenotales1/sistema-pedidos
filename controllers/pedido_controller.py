@@ -21,6 +21,21 @@ ORDEM_CATEGORIAS = {
     "Tecido": 3,
 }
 
+STATUS_PEDIDO = [
+    "Pagamento pendente",
+    "Aguardando produção",
+    "Pronto para retirada",
+    "Finalizado",
+]
+
+
+def normalizar_status_pedido(status):
+    if status == "Pendente":
+        return "Pagamento pendente"
+    if status in STATUS_PEDIDO:
+        return status
+    return "Pagamento pendente"
+
 
 def obter_clientes_disponiveis():
     clientes = [cliente.nome for cliente in Cliente.query.order_by(Cliente.nome).all()]
@@ -42,7 +57,7 @@ def construir_catalogo_materiais(extra_stock=None):
                 "id": material.id,
                 "largura_m": round(material.largura_m, 2),
                 "largura_formatada": material.largura_formatada,
-                "rolos": material.quantidade_rolos,
+                "bobinas": material.quantidade_bobinas,
                 "metros_disponiveis": round(material.metros_disponiveis + extra_stock.get(material.id, 0), 2),
                 "metros_disponiveis_formatados": formatar_metros(
                     round(material.metros_disponiveis + extra_stock.get(material.id, 0), 2)
@@ -81,7 +96,7 @@ def obter_material_do_pedido(pedido):
     return Material.query.filter_by(
         categoria=pedido.categoria,
         nome=pedido.material_nome,
-        largura_m=pedido.largura_rolo_usada_m,
+        largura_m=pedido.largura_bobina_usada_m,
     ).first()
 
 
@@ -145,7 +160,7 @@ def processar_salvamento_pedido(form_data, pedido=None):
     )
 
     if not sugestao:
-        return None, "Não há rolos com largura e metragem suficientes para esse pedido."
+        return None, "Não há bobinas com largura e metragem suficientes para esse pedido."
 
     if pedido:
         material_anterior = obter_material_do_pedido(pedido)
@@ -169,10 +184,11 @@ def processar_salvamento_pedido(form_data, pedido=None):
     pedido.altura_pedido_m = altura_m
     pedido.quantidade = quantidade
     pedido.unidade_medida = form_data["unidade"]
-    pedido.largura_rolo_usada_m = sugestao["largura_rolo"]
+    pedido.largura_bobina_usada_m = sugestao["largura_bobina"]
     pedido.orientacao = sugestao["orientacao"]
     pedido.metros_consumidos = sugestao["metros_consumidos"]
     pedido.area_total_m2 = area_total
+    pedido.status = normalizar_status_pedido(pedido.status)
 
     db.session.commit()
     return pedido, ""
@@ -182,16 +198,56 @@ def processar_salvamento_pedido(form_data, pedido=None):
 def lista_pedidos():
     pedidos = Pedido.query.order_by(Pedido.id.desc()).all()
     busca = request.args.get("busca", "").strip()
+    filtro = request.args.get("filtro", "id").strip()
+    status_busca = request.args.get("status", "").strip()
     termo = normalizar_busca(busca)
+    mostrar_finalizados = filtro == "status"
 
-    if termo:
-        pedidos = [
-            pedido
-            for pedido in pedidos
-            if termo in normalizar_busca(pedido.id) or termo in normalizar_busca(pedido.cliente_nome)
-        ]
+    for pedido in pedidos:
+        pedido.status = normalizar_status_pedido(pedido.status)
 
-    return render_template("pedidos/lista.html", pedidos=pedidos, busca=busca)
+    if not mostrar_finalizados:
+        pedidos = [pedido for pedido in pedidos if normalizar_status_pedido(pedido.status) != "Finalizado"]
+
+    if filtro == "status":
+        if status_busca:
+            pedidos = [
+                pedido
+                for pedido in pedidos
+                if normalizar_status_pedido(pedido.status) == status_busca
+            ]
+    elif termo:
+        if filtro == "cliente":
+            pedidos = [pedido for pedido in pedidos if termo in normalizar_busca(pedido.cliente_nome)]
+        elif filtro == "material":
+            pedidos = [
+                pedido
+                for pedido in pedidos
+                if termo in normalizar_busca(pedido.categoria) or termo in normalizar_busca(pedido.material_nome)
+            ]
+        else:
+            pedidos = [pedido for pedido in pedidos if termo in normalizar_busca(pedido.id)]
+
+    return render_template(
+        "pedidos/lista.html",
+        pedidos=pedidos,
+        busca=busca,
+        filtro=filtro,
+        status_busca=status_busca,
+        status_pedido=STATUS_PEDIDO,
+    )
+
+
+@pedido_bp.route("/pedidos/<int:id>/status", methods=["POST"])
+def atualizar_status_pedido(id):
+    pedido = Pedido.query.get_or_404(id)
+    status = request.form.get("status", "").strip()
+
+    if status in STATUS_PEDIDO:
+        pedido.status = status
+        db.session.commit()
+
+    return redirect(url_for("pedido.lista_pedidos"))
 
 
 @pedido_bp.route("/pedidos/novo", methods=["GET", "POST"])
@@ -260,7 +316,7 @@ def detalhe_pedido(id):
         pedido=pedido,
         area_total=formatar_area(pedido.area_total_m2),
         metros_consumidos=formatar_metros(pedido.metros_consumidos),
-        largura_rolo_usada=formatar_metros(pedido.largura_rolo_usada_m),
+        largura_bobina_usada=formatar_metros(pedido.largura_bobina_usada_m),
         largura_pedido=formatar_metros(pedido.largura_pedido_m),
         altura_pedido=formatar_metros(pedido.altura_pedido_m),
         criado_em=pedido.criado_em.strftime("%d/%m/%Y %H:%M"),

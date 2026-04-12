@@ -7,10 +7,22 @@
 <div class="estoque-header">
 <div>
 <h2>Estoque</h2>
-<p class="estoque-subtitle">Expanda um tipo para ver cada variação de largura, os rolos disponíveis e os metros restantes.</p>
+<p class="estoque-subtitle">Expanda um tipo para ver cada variação de largura, as bobinas disponíveis e os metros restantes.</p>
 </div>
+<div class="estoque-header-actions">
+<button type="button" class="btn-sec" id="abrir-novo-tipo">+ Tipo</button>
 <a href="/estoque/novo" class="btn">+ Cadastrar Material</a>
 </div>
+</div>
+
+<form class="novo-tipo-form" id="novo-tipo-form" method="post" action="{{ url_for('estoque.nova_categoria') }}">
+<div>
+<label>Tipo de material</label>
+<input type="text" name="nome" placeholder="Ex: ACM" required>
+</div>
+<button class="btn" type="submit">Salvar Tipo</button>
+<button type="button" class="btn-cancelar-form" id="cancelar-novo-tipo">Cancelar</button>
+</form>
 
 {% for secao in secoes %}
 <details class="estoque-secao" open>
@@ -19,12 +31,13 @@
 <span>{{ secao.itens | length }} variações</span>
 </summary>
 
+{% if secao.itens %}
 <table class="tabela-estoque">
 <thead>
 <tr>
 <th>Material</th>
 <th>Largura</th>
-<th>Rolos</th>
+<th>Bobinas</th>
 <th>Metros restantes</th>
 <th>Ações</th>
 </tr>
@@ -34,27 +47,61 @@
 <tr>
 <td>{{ item.nome }}</td>
 <td>{{ item.largura }}</td>
-<td>{{ item.rolos }}</td>
+<td>{{ item.bobinas }}</td>
 <td>{{ item.metros_restantes }}</td>
 <td>
 <div class="acoes-estoque">
-<form method="post" action="/estoque/material/{{ item.id }}/adicionar-unidade">
-<button class="btn btn-small" type="submit">+ Unidade</button>
+<form method="post" action="{{ url_for('estoque.adicionar_unidade', material_id=item.id) }}">
+<button class="btn btn-small" type="submit">+ Bobina</button>
 </form>
-<form method="post" action="/estoque/material/{{ item.id }}/remover-unidade">
-<button class="btn-sec btn-small" type="submit">- Unidade</button>
+<form method="post" action="{{ url_for('estoque.remover_unidade', material_id=item.id) }}">
+<button class="btn-sec btn-small" type="submit">- Bobina</button>
 </form>
+<button class="btn-sec btn-small" type="button" data-editar-estoque="{{ item.id }}">Editar</button>
 </div>
+<form class="editar-estoque-form" id="editar-estoque-{{ item.id }}" method="post" action="{{ url_for('estoque.editar_metros', material_id=item.id) }}">
+<label>Metros disponíveis</label>
+<input type="number" name="metros_disponiveis" step="0.01" min="0" value="{{ item.metros_restantes_valor }}" required>
+<button class="btn btn-small" type="submit">Salvar</button>
+</form>
 </td>
 </tr>
 {% endfor %}
 </tbody>
 </table>
+{% else %}
+<p class="estoque-vazio">Nenhuma variação cadastrada para este tipo.</p>
+{% endif %}
 </details>
 {% endfor %}
 
 {% if not secoes %}
 <p>Nenhum material cadastrado no estoque.</p>
 {% endif %}
+
+<script>
+const abrirNovoTipo = document.getElementById("abrir-novo-tipo");
+const cancelarNovoTipo = document.getElementById("cancelar-novo-tipo");
+const novoTipoForm = document.getElementById("novo-tipo-form");
+
+abrirNovoTipo.addEventListener("click", function () {
+    novoTipoForm.classList.add("is-visible");
+    novoTipoForm.querySelector("input").focus();
+});
+
+cancelarNovoTipo.addEventListener("click", function () {
+    novoTipoForm.classList.remove("is-visible");
+});
+
+document.querySelectorAll("[data-editar-estoque]").forEach(function (button) {
+    button.addEventListener("click", function () {
+        const form = document.getElementById("editar-estoque-" + button.dataset.editarEstoque);
+        form.classList.toggle("is-visible");
+        if (form.classList.contains("is-visible")) {
+            form.querySelector("input").focus();
+        }
+    });
+});
+</script>
 
 {% endblock %}

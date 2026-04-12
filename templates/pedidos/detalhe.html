@@ -24,8 +24,8 @@
 <hr>
 
 <div class="total-box">
-<p><strong>Bobina selecionada:</strong> {{ largura_rolo_usada }}</p>
-<p><strong>Orientação usada:</strong> {{ pedido.orientacao }}</p>
+<p><strong>Bobina selecionada:</strong> {{ largura_bobina_usada }}</p>
+<p><strong>Orientação usada:</strong> {{ pedido.orientacao | replace("Padrao", "Padrão") }}</p>
 <p><strong>Área total:</strong> {{ area_total }}</p>
 <p><strong>Metros descontados do estoque:</strong> {{ metros_consumidos }}</p>
 </div>

@@ -275,7 +275,7 @@ function calcularSugestao() {
 
         if (largura <= variacao.largura_m) {
             opcoes.push({
-                orientacao: "Padrao",
+                orientacao: "Padrão",
                 metrosPorUnidade: altura,
                 medidaNaBobina: largura,
             });
@@ -310,7 +310,7 @@ function calcularSugestao() {
         }
 
         candidatos.push({
-            larguraRolo: variacao.largura_m,
+            larguraBobina: variacao.largura_m,
             metrosConsumidos: metrosConsumidos,
             orientacao: melhorOpcao.orientacao,
             medidaNaBobina: melhorOpcao.medidaNaBobina,
@@ -327,7 +327,7 @@ function calcularSugestao() {
 
     candidatos.sort((a, b) => {
         return (a.desperdicioTotal - b.desperdicioTotal)
-            || (a.larguraRolo - b.larguraRolo)
+            || (a.larguraBobina - b.larguraBobina)
             || (a.metrosConsumidos - b.metrosConsumidos)
             || (a.sobraLargura - b.sobraLargura);
     });
@@ -360,7 +360,7 @@ function atualizarSugestao() {
 
     resultadoArea.textContent = formatarArea(sugestao.areaTotal);
     resultadoConsumo.textContent = formatarMetros(sugestao.metrosConsumidos);
-    resultadoBobina.textContent = formatarMetros(sugestao.larguraRolo);
+    resultadoBobina.textContent = formatarMetros(sugestao.larguraBobina);
     resultadoOrientacao.textContent = sugestao.orientacao;
     resultadoMedidaBobina.textContent = formatarMetros(sugestao.medidaNaBobina);
     resultadoEstoque.textContent = formatarMetros(sugestao.metrosRestantes);

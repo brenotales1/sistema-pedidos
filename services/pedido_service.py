@@ -34,7 +34,7 @@ def calcular_melhor_aproveitamento(variacoes, largura_m, altura_m, quantidade, e
         if largura_m <= variacao.largura_m:
             opcoes.append(
                 {
-                    "orientacao": "Padrao",
+                    "orientacao": "Padrão",
                     "metros_por_unidade": altura_m,
                     "medida_na_bobina": largura_m,
                 }
@@ -76,7 +76,7 @@ def calcular_melhor_aproveitamento(variacoes, largura_m, altura_m, quantidade, e
                 "orientacao": melhor_opcao["orientacao"],
                 "metros_por_unidade": round(melhor_opcao["metros_por_unidade"], 2),
                 "metros_consumidos": metros_consumidos,
-                "largura_rolo": round(variacao.largura_m, 2),
+                "largura_bobina": round(variacao.largura_m, 2),
                 "medida_na_bobina": round(melhor_opcao["medida_na_bobina"], 2),
                 "sobra_largura": round(variacao.largura_m - melhor_opcao["medida_na_bobina"], 2),
                 "area_consumida": area_consumida,
@@ -92,7 +92,7 @@ def calcular_melhor_aproveitamento(variacoes, largura_m, altura_m, quantidade, e
         candidatos,
         key=lambda candidato: (
             candidato["desperdicio_total"],
-            candidato["largura_rolo"],
+            candidato["largura_bobina"],
             candidato["metros_consumidos"],
             candidato["sobra_largura"],
         ),

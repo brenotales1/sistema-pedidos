@@ -3,8 +3,30 @@
 {% block content %}
 
 <div class="top-bar">
-<form method="get" action="/pedidos">
-<input class="input-busca" type="text" name="busca" value="{{ busca or '' }}" placeholder="Buscar por ID ou nome do cliente">
+<form class="pedido-busca-form" method="get" action="/pedidos">
+<input class="input-busca" id="pedido-busca" type="text" name="busca" value="{{ busca or '' }}" placeholder="Buscar pedido">
+
+<select class="status-busca" id="pedido-status-busca" name="status">
+<option value="">Todos os status</option>
+{% for status in status_pedido %}
+<option value="{{ status }}" {% if status_busca == status %}selected{% endif %}>{{ status }}</option>
+{% endfor %}
+</select>
+
+<button class="btn-filtro" id="abrir-filtro" type="button" aria-label="Abrir filtro">
+<svg viewBox="0 0 24 24" aria-hidden="true">
+<path d="M3 5h18l-7 8v5l-4 2v-7L3 5z"></path>
+</svg>
+</button>
+
+<select class="filtro-select {% if filtro != 'id' %}is-visible{% endif %}" id="pedido-filtro" name="filtro" aria-label="Filtrar por">
+<option value="id" {% if filtro == "id" %}selected{% endif %}>ID</option>
+<option value="cliente" {% if filtro == "cliente" %}selected{% endif %}>Nome do cliente</option>
+<option value="material" {% if filtro == "material" %}selected{% endif %}>Tipo de material</option>
+<option value="status" {% if filtro == "status" %}selected{% endif %}>Status</option>
+</select>
+
+<button class="btn" type="submit">Pesquisar</button>
 </form>
 <a href="/pedidos/novo" class="btn">+ Realizar Pedido</a>
 </div>
@@ -30,8 +52,16 @@
 <td>{{ pedido.id }}</td>
 <td>{{ pedido.cliente_nome }}</td>
 <td>{{ pedido.categoria }} • {{ pedido.material_nome }}</td>
-<td>{{ pedido.largura_rolo_formatada }}</td>
-<td>{{ pedido.status }}</td>
+<td>{{ pedido.largura_bobina_formatada }}</td>
+<td>
+<form class="status-form" method="post" action="{{ url_for('pedido.atualizar_status_pedido', id=pedido.id) }}">
+<select name="status" onchange="this.form.submit()">
+{% for status in status_pedido %}
+<option value="{{ status }}" {% if pedido.status == status %}selected{% endif %}>{{ status }}</option>
+{% endfor %}
+</select>
+</form>
+</td>
 <td><a href="/pedidos/{{ pedido.id }}">Visualizar</a></td>
 </tr>
 
@@ -46,5 +76,28 @@
 </tbody>
 
 </table>
+
+<script>
+const filtroButton = document.getElementById("abrir-filtro");
+const filtroSelect = document.getElementById("pedido-filtro");
+const buscaInput = document.getElementById("pedido-busca");
+const statusBusca = document.getElementById("pedido-status-busca");
+
+function atualizarCamposDeBusca() {
+    const filtroStatus = filtroSelect.value === "status";
+    buscaInput.style.display = filtroStatus ? "none" : "";
+    statusBusca.style.display = filtroStatus ? "block" : "none";
+}
+
+filtroButton.addEventListener("click", function () {
+    filtroSelect.classList.toggle("is-visible");
+    if (filtroSelect.classList.contains("is-visible")) {
+        filtroSelect.focus();
+    }
+});
+
+filtroSelect.addEventListener("change", atualizarCamposDeBusca);
+atualizarCamposDeBusca();
+</script>
 
 {% endblock %}

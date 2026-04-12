@@ -7,6 +7,13 @@
     flex-wrap:wrap;
 }
 
+.estoque-header-actions{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
 .estoque-subtitle{
     margin:6px 0 0;
     color:#5f6c7b;
@@ -52,10 +59,77 @@
     background:#f5f5f5;
 }
 
+.novo-tipo-form,
+.editar-estoque-form{
+    display:none;
+}
+
+.novo-tipo-form.is-visible,
+.editar-estoque-form.is-visible{
+    display:flex;
+    align-items:flex-end;
+    gap:12px;
+    margin:0 0 16px;
+    max-width:none;
+    padding:14px;
+    background:white;
+    border-radius:6px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+    flex-wrap:wrap;
+}
+
+.novo-tipo-form div{
+    min-width:170px;
+    flex:1;
+}
+
+.novo-tipo-form label,
+.editar-estoque-form label{
+    display:block;
+    margin-bottom:5px;
+    font-weight:bold;
+    font-size:13px;
+}
+
+.novo-tipo-form input,
+.editar-estoque-form input{
+    padding:8px;
+    border:1px solid #ccd6dd;
+    border-radius:4px;
+}
+
+.novo-tipo-form input{
+    width:100%;
+}
+
+.editar-estoque-form.is-visible{
+    margin:10px 0 0;
+    padding:0;
+    background:transparent;
+    box-shadow:none;
+}
+
+.editar-estoque-form input{
+    width:120px;
+}
+
+.estoque-vazio{
+    margin:0;
+    color:#5f6c7b;
+}
+
 .acoes-estoque{
     display:flex;
     gap:8px;
     flex-wrap:wrap;
+}
+
+.acoes-estoque form,
+.editar-estoque-form{
+    background:transparent;
+    padding:0;
+    max-width:none;
+    border-radius:0;
 }
 
 .btn{
@@ -84,6 +158,14 @@
     background:#95a5a6;
 }
 
+.btn-cancelar-form{
+    background:transparent;
+    color:#333;
+    border:none;
+    padding:8px 15px;
+    cursor:pointer;
+}
+
 .btn-small{
     padding:6px 10px;
     font-size:13px;
@@ -97,5 +179,17 @@
     .tabela-estoque th,
     .tabela-estoque td{
         padding:10px 8px;
+    }
+
+    .novo-tipo-form.is-visible,
+    .editar-estoque-form.is-visible{
+        align-items:stretch;
+        flex-direction:column;
+    }
+
+    .novo-tipo-form div,
+    .editar-estoque-form input{
+        min-width:100%;
+        width:100%;
     }
 }
