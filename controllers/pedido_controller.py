@@ -38,8 +38,7 @@ def normalizar_status_pedido(status):
 
 
 def obter_clientes_disponiveis():
-    clientes = [cliente.nome for cliente in Cliente.query.order_by(Cliente.nome).all()]
-    return clientes or ["João", "Maria"]
+    return [cliente.nome for cliente in Cliente.query.order_by(Cliente.nome).all()]
 
 
 def construir_catalogo_materiais(extra_stock=None):
@@ -77,6 +76,18 @@ def dados_iniciais_formulario():
         "altura": "",
         "unidade": "m",
         "quantidade": 1,
+    }
+
+
+def extrair_form_data_pedido():
+    return {
+        "cliente": request.form.get("cliente", "").strip(),
+        "categoria": request.form.get("categoria", "").strip(),
+        "tipo": request.form.get("tipo", "").strip(),
+        "largura": request.form.get("largura", "").strip(),
+        "altura": request.form.get("altura", "").strip(),
+        "unidade": request.form.get("unidade", "m").strip(),
+        "quantidade": request.form.get("quantidade", "1").strip(),
     }
 
 
@@ -255,15 +266,7 @@ def novo_pedido():
     form_data = dados_iniciais_formulario()
 
     if request.method == "POST":
-        form_data = {
-            "cliente": request.form.get("cliente", "").strip(),
-            "categoria": request.form.get("categoria", "").strip(),
-            "tipo": request.form.get("tipo", "").strip(),
-            "largura": request.form.get("largura", "").strip(),
-            "altura": request.form.get("altura", "").strip(),
-            "unidade": request.form.get("unidade", "m").strip(),
-            "quantidade": request.form.get("quantidade", "1").strip(),
-        }
+        form_data = extrair_form_data_pedido()
         pedido, erro = processar_salvamento_pedido(form_data)
         if pedido:
             return redirect(url_for("pedido.detalhe_pedido", id=pedido.id))
@@ -277,15 +280,7 @@ def editar_pedido(id):
     pedido = Pedido.query.get_or_404(id)
 
     if request.method == "POST":
-        form_data = {
-            "cliente": request.form.get("cliente", "").strip(),
-            "categoria": request.form.get("categoria", "").strip(),
-            "tipo": request.form.get("tipo", "").strip(),
-            "largura": request.form.get("largura", "").strip(),
-            "altura": request.form.get("altura", "").strip(),
-            "unidade": request.form.get("unidade", "m").strip(),
-            "quantidade": request.form.get("quantidade", "1").strip(),
-        }
+        form_data = extrair_form_data_pedido()
         pedido_atualizado, erro = processar_salvamento_pedido(form_data, pedido=pedido)
         if pedido_atualizado:
             return redirect(url_for("pedido.detalhe_pedido", id=pedido_atualizado.id))

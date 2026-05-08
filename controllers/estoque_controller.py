@@ -3,6 +3,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from database.db import db
 from models.categoria_material import CategoriaMaterial
 from models.material import Material
+from services.constantes import METROS_POR_BOBINA
 from services.estoque_service import adicionar_bobina, ajustar_metros_disponiveis, remover_bobina
 from services.material_service import normalizar_nome
 
@@ -146,11 +147,23 @@ def editar_metros(material_id):
     except ValueError:
         metros_disponiveis = material.metros_disponiveis
 
-    capacidade_total = material.quantidade_bobinas * 50.0
+    capacidade_total = material.quantidade_bobinas * METROS_POR_BOBINA
     if metros_disponiveis > capacidade_total:
         flash("A metragem disponível não pode ser maior que a soma das bobinas cadastradas.", "erro")
         return redirect(url_for("estoque.lista_estoque"))
 
     ajustar_metros_disponiveis(material, metros_disponiveis)
     db.session.commit()
+    return redirect(url_for("estoque.lista_estoque"))
+
+
+@estoque_bp.route("/estoque/material/<int:material_id>/excluir", methods=["POST"])
+def excluir_material(material_id):
+    material = Material.query.get_or_404(material_id)
+    descricao_material = f"{material.nome} ({material.largura_formatada})"
+
+    db.session.delete(material)
+    db.session.commit()
+    flash(f'Material "{descricao_material}" excluído com sucesso.', "sucesso")
+
     return redirect(url_for("estoque.lista_estoque"))

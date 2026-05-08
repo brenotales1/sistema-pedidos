@@ -5,8 +5,7 @@ from models.bobina_estoque import BobinaEstoque
 from models.categoria_material import CategoriaMaterial
 from models.material import Material
 from models.pedido import Pedido
-
-METROS_POR_BOBINA = 50.0
+from services.constantes import METROS_POR_BOBINA
 
 MATERIAIS_PADRAO = [
     {"categoria": "Adesivo", "nome": "Adesivo Branco Brilho", "largura_m": 1.27},

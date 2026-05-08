@@ -24,7 +24,7 @@
     background:white;
     border-radius:8px;
     box-shadow:0 2px 6px rgba(0,0,0,0.08);
-    overflow:hidden;
+    overflow:auto;
 }
 
 .estoque-secao summary{
@@ -39,6 +39,7 @@
 
 .tabela-estoque{
     width:100%;
+    min-width:760px;
     border-collapse:collapse;
     background:white;
 }
@@ -122,6 +123,7 @@
     display:flex;
     gap:8px;
     flex-wrap:wrap;
+    align-items:center;
 }
 
 .acoes-estoque form,
@@ -169,6 +171,59 @@
 .btn-small{
     padding:6px 10px;
     font-size:13px;
+}
+
+.btn-lixeira{
+    background:#c0392b;
+    color:white;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+    line-height:1;
+}
+
+.btn-lixeira:hover{
+    background:#992d22;
+}
+
+.modal-backdrop{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(44, 62, 80, 0.35);
+    z-index:40;
+}
+
+.modal-backdrop.is-visible{
+    display:flex;
+}
+
+.modal-confirmacao{
+    width:min(100%, 420px);
+    background:white;
+    border-radius:8px;
+    padding:22px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.22);
+}
+
+.modal-confirmacao h3{
+    margin:0 0 10px;
+}
+
+.modal-confirmacao p{
+    margin:0;
+    color:#34495e;
+    line-height:1.4;
+}
+
+.modal-acoes{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:22px;
 }
 
 @media (max-width: 720px){

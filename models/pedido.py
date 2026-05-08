@@ -14,7 +14,7 @@ class Pedido(db.Model):
     altura_pedido_m = db.Column(db.Float, nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
     unidade_medida = db.Column(db.String(10), nullable=False)
-    largura_bobina_usada_m = db.Column("largura_" + "ro" + "lo_usada_m", db.Float, nullable=False)
+    largura_bobina_usada_m = db.Column(db.Float, nullable=False)
     orientacao = db.Column(db.String(30), nullable=False)
     metros_consumidos = db.Column(db.Float, nullable=False)
     area_total_m2 = db.Column(db.Float, nullable=False)

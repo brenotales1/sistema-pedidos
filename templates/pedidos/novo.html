@@ -382,7 +382,7 @@ document.addEventListener("keydown", function (event) {
     }
 });
 
-salvarClienteButton.addEventListener("click", function () {
+salvarClienteButton.addEventListener("click", async function () {
     const nomeCliente = nomeClienteInput.value.trim();
 
     if (!nomeCliente) {
@@ -390,17 +390,42 @@ salvarClienteButton.addEventListener("click", function () {
         return;
     }
 
-    const clienteOption = document.createElement("option");
-    clienteOption.value = nomeCliente;
-    clienteOption.textContent = nomeCliente;
-    clienteSelect.appendChild(clienteOption);
-    clienteSelect.value = nomeCliente;
+    salvarClienteButton.disabled = true;
 
-    nomeClienteInput.value = "";
-    telefoneClienteInput.value = "";
-    empresaClienteInput.value = "";
+    try {
+        const response = await fetch("{{ url_for('cliente.criar_cliente_rapido') }}", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                nome: nomeCliente,
+                telefone: telefoneClienteInput.value.trim(),
+                empresa: empresaClienteInput.value.trim(),
+            }),
+        });
 
-    setDrawerState(false);
+        if (!response.ok) {
+            nomeClienteInput.focus();
+            return;
+        }
+
+        const cliente = await response.json();
+        let clienteOption = Array.from(clienteSelect.options).find((option) => option.value === cliente.nome);
+
+        if (!clienteOption) {
+            clienteOption = document.createElement("option");
+            clienteOption.value = cliente.nome;
+            clienteOption.textContent = cliente.nome;
+            clienteSelect.appendChild(clienteOption);
+        }
+
+        clienteSelect.value = cliente.nome;
+        nomeClienteInput.value = "";
+        telefoneClienteInput.value = "";
+        empresaClienteInput.value = "";
+        setDrawerState(false);
+    } finally {
+        salvarClienteButton.disabled = false;
+    }
 });
 
 categoriaSelect.addEventListener("change", function () {

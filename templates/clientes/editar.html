@@ -6,21 +6,25 @@
 
 <h2>Editar Cliente</h2>
 
-<form class="form-cliente">
+{% if erro %}
+<p class="form-alert">{{ erro }}</p>
+{% endif %}
+
+<form class="form-cliente" method="post" action="{{ url_for('cliente.editar_cliente', id=cliente.id) }}">
 
 <div class="form-group">
 <label>Nome</label>
-<input type="text" value="{{ cliente.nome }}">
+<input type="text" name="nome" value="{{ form_data.nome }}" required>
 </div>
 
 <div class="form-group">
 <label>Telefone</label>
-<input type="text" value="{{ cliente.telefone }}">
+<input type="text" name="telefone" value="{{ form_data.telefone }}">
 </div>
 
 <div class="form-group">
 <label>Empresa</label>
-<input type="text" value="{{ cliente.empresa }}">
+<input type="text" name="empresa" value="{{ form_data.empresa }}">
 </div>
 
 <div class="acoes">

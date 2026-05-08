@@ -58,6 +58,9 @@
 <button class="btn-sec btn-small" type="submit">- Bobina</button>
 </form>
 <button class="btn-sec btn-small" type="button" data-editar-estoque="{{ item.id }}">Editar</button>
+<form method="post" action="{{ url_for('estoque.excluir_material', material_id=item.id) }}">
+<button class="btn-lixeira btn-small" type="button" data-excluir-material="{{ item.nome }} ({{ item.largura }})" aria-label="Excluir {{ item.nome }} {{ item.largura }}" title="Excluir {{ item.nome }} {{ item.largura }}">🗑</button>
+</form>
 </div>
 <form class="editar-estoque-form" id="editar-estoque-{{ item.id }}" method="post" action="{{ url_for('estoque.editar_metros', material_id=item.id) }}">
 <label>Metros disponíveis</label>
@@ -79,10 +82,26 @@
 <p>Nenhum material cadastrado no estoque.</p>
 {% endif %}
 
+<div class="modal-backdrop" id="modal-excluir-material" aria-hidden="true">
+<div class="modal-confirmacao" role="dialog" aria-modal="true" aria-labelledby="modal-excluir-titulo">
+<h3 id="modal-excluir-titulo">Excluir material?</h3>
+<p id="modal-excluir-texto"></p>
+<div class="modal-acoes">
+<button type="button" class="btn-cancelar-form" id="cancelar-exclusao-material">Cancelar</button>
+<button type="button" class="btn-lixeira" id="confirmar-exclusao-material">Excluir</button>
+</div>
+</div>
+</div>
+
 <script>
 const abrirNovoTipo = document.getElementById("abrir-novo-tipo");
 const cancelarNovoTipo = document.getElementById("cancelar-novo-tipo");
 const novoTipoForm = document.getElementById("novo-tipo-form");
+const modalExclusao = document.getElementById("modal-excluir-material");
+const textoModalExclusao = document.getElementById("modal-excluir-texto");
+const cancelarExclusaoButton = document.getElementById("cancelar-exclusao-material");
+const confirmarExclusaoButton = document.getElementById("confirmar-exclusao-material");
+let formExclusaoSelecionado = null;
 
 abrirNovoTipo.addEventListener("click", function () {
     novoTipoForm.classList.add("is-visible");
@@ -101,6 +120,42 @@ document.querySelectorAll("[data-editar-estoque]").forEach(function (button) {
             form.querySelector("input").focus();
         }
     });
+});
+
+document.querySelectorAll("[data-excluir-material]").forEach(function (button) {
+    button.addEventListener("click", function () {
+        formExclusaoSelecionado = button.closest("form");
+        textoModalExclusao.textContent = 'Deseja realmente excluir "' + button.dataset.excluirMaterial + '"?';
+        modalExclusao.classList.add("is-visible");
+        modalExclusao.setAttribute("aria-hidden", "false");
+        cancelarExclusaoButton.focus();
+    });
+});
+
+function fecharModalExclusao() {
+    modalExclusao.classList.remove("is-visible");
+    modalExclusao.setAttribute("aria-hidden", "true");
+    formExclusaoSelecionado = null;
+}
+
+cancelarExclusaoButton.addEventListener("click", fecharModalExclusao);
+
+modalExclusao.addEventListener("click", function (event) {
+    if (event.target === modalExclusao) {
+        fecharModalExclusao();
+    }
+});
+
+confirmarExclusaoButton.addEventListener("click", function () {
+    if (formExclusaoSelecionado) {
+        formExclusaoSelecionado.submit();
+    }
+});
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && modalExclusao.classList.contains("is-visible")) {
+        fecharModalExclusao();
+    }
 });
 </script>
 

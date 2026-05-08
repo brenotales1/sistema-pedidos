@@ -1,5 +1,17 @@
 from models.bobina_estoque import BobinaEstoque
-from services.material_service import METROS_POR_BOBINA
+from services.constantes import METROS_POR_BOBINA
+
+
+def ordenar_bobinas_por_metragem(material):
+    return sorted(material.bobinas, key=lambda bobina: bobina.metros_restantes)
+
+
+def ordenar_bobinas_por_cadastro(material):
+    return sorted(material.bobinas, key=lambda bobina: bobina.id or 0)
+
+
+def bobina_completa(bobina):
+    return abs(bobina.metros_restantes - METROS_POR_BOBINA) < 0.01
 
 
 def adicionar_bobina(material, quantidade=1):
@@ -13,10 +25,7 @@ def remover_bobina(material):
 
     bobinas_ordenadas = sorted(
         material.bobinas,
-        key=lambda bobina: (
-            0 if abs(bobina.metros_restantes - METROS_POR_BOBINA) < 0.01 else 1,
-            bobina.metros_restantes,
-        ),
+        key=lambda bobina: (not bobina_completa(bobina), bobina.metros_restantes),
     )
     bobina_removida = bobinas_ordenadas[0]
     material.bobinas.remove(bobina_removida)
@@ -26,7 +35,7 @@ def remover_bobina(material):
 def ajustar_metros_disponiveis(material, metros_disponiveis):
     restante = round(max(metros_disponiveis, 0), 2)
 
-    for bobina in sorted(material.bobinas, key=lambda item: item.id):
+    for bobina in ordenar_bobinas_por_cadastro(material):
         metros_bobina = min(METROS_POR_BOBINA, restante)
         bobina.metros_restantes = round(metros_bobina, 2)
         restante = round(restante - metros_bobina, 2)
@@ -38,9 +47,7 @@ def devolver_material(material, metros_para_devolver):
     if restante <= 0:
         return
 
-    bobinas_ordenadas = sorted(material.bobinas, key=lambda bobina: bobina.metros_restantes)
-
-    for bobina in bobinas_ordenadas:
+    for bobina in ordenar_bobinas_por_metragem(material):
         if restante <= 0:
             break
 
@@ -64,9 +71,7 @@ def consumir_material(material, metros_necessarios):
     if restante > material.metros_disponiveis:
         return False
 
-    bobinas_ordenadas = sorted(material.bobinas, key=lambda bobina: bobina.metros_restantes)
-
-    for bobina in bobinas_ordenadas:
+    for bobina in ordenar_bobinas_por_metragem(material):
         if restante <= 0:
             break
 

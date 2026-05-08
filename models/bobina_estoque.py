@@ -2,7 +2,7 @@ from database.db import db
 
 
 class BobinaEstoque(db.Model):
-    __tablename__ = "ro" + "lo_estoque"
+    __tablename__ = "bobina_estoque"
 
     id = db.Column(db.Integer, primary_key=True)
     material_id = db.Column(db.Integer, db.ForeignKey("material.id"), nullable=False)

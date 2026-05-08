@@ -1,26 +1,42 @@
 .pedido-page{
     position:relative;
+    display:flex;
+    justify-content:center;
+    min-height:calc(100vh - 190px);
 }
 
 .pedido-main{
-    max-width:860px;
+    width:min(100%, 1040px);
     transition:filter 0.25s ease;
 }
 
 .pedido-header{
     display:flex;
     align-items:center;
-    justify-content:space-between;
+    justify-content:center;
     gap:16px;
     margin-bottom:18px;
     flex-wrap:wrap;
+    position:relative;
+}
+
+.pedido-header h2{
+    text-align:center;
+    width:100%;
+}
+
+.pedido-header form{
+    position:absolute;
+    right:0;
 }
 
 .form-pedido{
     background:white;
     padding:25px;
     border-radius:6px;
-    max-width:800px;
+    width:100%;
+    max-width:none;
+    box-sizing:border-box;
     box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
 
@@ -51,6 +67,7 @@
 .form-cliente-inline input[type="text"]{
     padding:8px;
     width:100%;
+    box-sizing:border-box;
     border:1px solid #ccc;
     border-radius:4px;
 }
@@ -240,7 +257,11 @@
     }
 
     .pedido-header{
-        align-items:flex-start;
+        align-items:center;
+    }
+
+    .pedido-header form{
+        position:static;
     }
 
     .cliente-row{
