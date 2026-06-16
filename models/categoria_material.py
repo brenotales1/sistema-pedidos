@@ -1,7 +1,11 @@
+"""Modelo de dados para categorias de materiais."""
+
 from database.db import db
 
 
 class CategoriaMaterial(db.Model):
+    """Representa uma categoria usada para agrupar materiais."""
+
     __tablename__ = "categoria_material"
 
     id = db.Column(db.Integer, primary_key=True)

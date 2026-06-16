@@ -1,25 +1,32 @@
+"""Regras de negocio para controle de bobinas no estoque."""
+
 from models.bobina_estoque import BobinaEstoque
 from services.constantes import METROS_POR_BOBINA
 
 
 def ordenar_bobinas_por_metragem(material):
+    """Retorna as bobinas do material ordenadas pela menor metragem."""
     return sorted(material.bobinas, key=lambda bobina: bobina.metros_restantes)
 
 
 def ordenar_bobinas_por_cadastro(material):
+    """Retorna as bobinas do material na ordem de cadastro."""
     return sorted(material.bobinas, key=lambda bobina: bobina.id or 0)
 
 
 def bobina_completa(bobina):
+    """Verifica se uma bobina esta praticamente cheia."""
     return abs(bobina.metros_restantes - METROS_POR_BOBINA) < 0.01
 
 
 def adicionar_bobina(material, quantidade=1):
+    """Adiciona uma ou mais bobinas completas ao material."""
     for _ in range(max(quantidade, 0)):
         material.bobinas.append(BobinaEstoque(metros_restantes=METROS_POR_BOBINA))
 
 
 def remover_bobina(material):
+    """Remove uma bobina do material, priorizando bobinas completas."""
     if not material.bobinas:
         return False
 
@@ -33,6 +40,7 @@ def remover_bobina(material):
 
 
 def ajustar_metros_disponiveis(material, metros_disponiveis):
+    """Redistribui a metragem disponivel entre as bobinas do material."""
     restante = round(max(metros_disponiveis, 0), 2)
 
     for bobina in ordenar_bobinas_por_cadastro(material):
@@ -42,6 +50,7 @@ def ajustar_metros_disponiveis(material, metros_disponiveis):
 
 
 def devolver_material(material, metros_para_devolver):
+    """Devolve metragem ao estoque quando um pedido e alterado ou cancelado."""
     restante = round(metros_para_devolver, 2)
 
     if restante <= 0:
@@ -66,6 +75,7 @@ def devolver_material(material, metros_para_devolver):
 
 
 def consumir_material(material, metros_necessarios):
+    """Consome metragem das bobinas do material para atender um pedido."""
     restante = round(metros_necessarios, 2)
 
     if restante > material.metros_disponiveis:

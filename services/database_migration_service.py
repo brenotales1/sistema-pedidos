@@ -1,3 +1,5 @@
+"""Rotinas simples de migracao para manter o SQLite compativel."""
+
 from sqlalchemy import inspect, text
 
 from database.db import db
@@ -7,6 +9,7 @@ COLUNA_LARGURA_BOBINA = "largura_bobina_usada_m"
 
 
 def aplicar_migracoes():
+    """Executa todas as migracoes pendentes do banco local."""
     renomear_tabela_bobinas()
     renomear_coluna_largura_bobina()
     garantir_coluna_empresa_cliente()
@@ -14,6 +17,7 @@ def aplicar_migracoes():
 
 
 def renomear_tabela_bobinas():
+    """Renomeia a tabela antiga de bobinas para o nome atual."""
     if TABELA_BOBINA_ESTOQUE in listar_tabelas():
         return
 
@@ -26,6 +30,7 @@ def renomear_tabela_bobinas():
 
 
 def renomear_coluna_largura_bobina():
+    """Garante que a coluna de largura da bobina tenha o nome atual."""
     if "pedido" not in listar_tabelas():
         return
 
@@ -48,6 +53,7 @@ def renomear_coluna_largura_bobina():
 
 
 def garantir_coluna_empresa_cliente():
+    """Adiciona a coluna empresa na tabela de clientes quando ausente."""
     if "cliente" not in listar_tabelas():
         return
 
@@ -56,6 +62,7 @@ def garantir_coluna_empresa_cliente():
 
 
 def encontrar_tabela_de_bobinas():
+    """Procura uma tabela antiga com estrutura equivalente a bobinas."""
     for tabela in listar_tabelas():
         if tabela.startswith("sqlite_"):
             continue
@@ -68,6 +75,7 @@ def encontrar_tabela_de_bobinas():
 
 
 def encontrar_coluna_largura_bobina(colunas):
+    """Procura uma coluna antiga compativel com largura da bobina usada."""
     for coluna in colunas:
         if coluna.startswith("largura_") and coluna.endswith("_usada_m"):
             return coluna
@@ -76,16 +84,20 @@ def encontrar_coluna_largura_bobina(colunas):
 
 
 def listar_tabelas():
+    """Lista os nomes das tabelas existentes no banco."""
     return set(inspect(db.engine).get_table_names())
 
 
 def listar_colunas(tabela):
+    """Lista os nomes das colunas de uma tabela."""
     return [coluna["name"] for coluna in inspect(db.engine).get_columns(tabela)]
 
 
 def executar_sql(sql):
+    """Executa um comando SQL bruto dentro da sessao atual."""
     db.session.execute(text(sql))
 
 
 def identificador(nome):
+    """Escapa um identificador SQL para uso em comandos de migracao."""
     return '"' + nome.replace('"', '""') + '"'

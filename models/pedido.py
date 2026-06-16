@@ -1,9 +1,13 @@
+"""Modelo de dados para pedidos."""
+
 from datetime import datetime
 
 from database.db import db
 
 
 class Pedido(db.Model):
+    """Representa um pedido realizado por um cliente."""
+
     __tablename__ = "pedido"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -23,12 +27,15 @@ class Pedido(db.Model):
 
     @property
     def largura_bobina_formatada(self):
+        """Retorna a largura da bobina usada formatada em metros."""
         return f"{self.largura_bobina_usada_m:.2f}".replace(".", ",") + "m"
 
     @property
     def metros_consumidos_formatados(self):
+        """Retorna a metragem consumida formatada em metros."""
         return f"{self.metros_consumidos:.2f}".replace(".", ",") + "m"
 
     @property
     def area_total_formatada(self):
+        """Retorna a area total formatada em metros quadrados."""
         return f"{self.area_total_m2:.2f}".replace(".", ",") + " m²"

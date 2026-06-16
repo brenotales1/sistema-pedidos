@@ -1,7 +1,11 @@
+"""Modelo de dados para bobinas de estoque."""
+
 from database.db import db
 
 
 class BobinaEstoque(db.Model):
+    """Representa uma bobina individual vinculada a um material."""
+
     __tablename__ = "bobina_estoque"
 
     id = db.Column(db.Integer, primary_key=True)

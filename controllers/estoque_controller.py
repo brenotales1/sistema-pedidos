@@ -1,3 +1,5 @@
+"""Rotas e operacoes de interface para estoque."""
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from database.db import db
@@ -17,6 +19,7 @@ ORDEM_CATEGORIAS = {
 
 
 def construir_secoes_estoque():
+    """Agrupa materiais por categoria para exibicao na tela de estoque."""
     materiais = Material.query.all()
     materiais.sort(key=lambda item: (ORDEM_CATEGORIAS.get(item.categoria, 99), item.nome, item.largura_m))
 
@@ -48,12 +51,14 @@ def construir_secoes_estoque():
 
 @estoque_bp.route("/estoque")
 def lista_estoque():
+    """Exibe a tela principal de estoque."""
     secoes = construir_secoes_estoque()
     return render_template("estoque/lista.html", secoes=secoes)
 
 
 @estoque_bp.route("/estoque/categoria/nova", methods=["POST"])
 def nova_categoria():
+    """Cadastra uma nova categoria de material."""
     nome = request.form.get("nome", "").strip()
 
     if nome:
@@ -77,6 +82,7 @@ def nova_categoria():
 
 @estoque_bp.route("/estoque/novo", methods=["GET", "POST"])
 def novo_estoque():
+    """Exibe e processa o formulario de cadastro de material."""
     erro = ""
     categorias = [categoria.nome for categoria in CategoriaMaterial.query.order_by(CategoriaMaterial.nome).all()]
 
@@ -123,6 +129,7 @@ def novo_estoque():
 
 @estoque_bp.route("/estoque/material/<int:material_id>/adicionar-unidade", methods=["POST"])
 def adicionar_unidade(material_id):
+    """Adiciona uma bobina ao material informado."""
     material = Material.query.get_or_404(material_id)
     adicionar_bobina(material, 1)
     db.session.commit()
@@ -131,6 +138,7 @@ def adicionar_unidade(material_id):
 
 @estoque_bp.route("/estoque/material/<int:material_id>/remover-unidade", methods=["POST"])
 def remover_unidade(material_id):
+    """Remove uma bobina do material informado."""
     material = Material.query.get_or_404(material_id)
     remover_bobina(material)
     db.session.commit()
@@ -139,6 +147,7 @@ def remover_unidade(material_id):
 
 @estoque_bp.route("/estoque/material/<int:material_id>/editar-metros", methods=["POST"])
 def editar_metros(material_id):
+    """Atualiza manualmente a metragem disponivel de um material."""
     material = Material.query.get_or_404(material_id)
     metros_texto = request.form.get("metros_disponiveis", "").strip().replace(",", ".")
 
@@ -159,6 +168,7 @@ def editar_metros(material_id):
 
 @estoque_bp.route("/estoque/material/<int:material_id>/excluir", methods=["POST"])
 def excluir_material(material_id):
+    """Exclui um material cadastrado no estoque."""
     material = Material.query.get_or_404(material_id)
     descricao_material = f"{material.nome} ({material.largura_formatada})"
 

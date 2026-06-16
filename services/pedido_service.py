@@ -1,7 +1,10 @@
+"""Funcoes de apoio para calculos e formatacoes de pedidos."""
+
 import unicodedata
 
 
 def normalizar_busca(valor):
+    """Normaliza texto para comparacoes de busca sem acentos e espacos."""
     texto = str(valor or "").strip().lower()
     texto = unicodedata.normalize("NFKD", texto)
     texto = "".join(char for char in texto if not unicodedata.combining(char))
@@ -9,6 +12,7 @@ def normalizar_busca(valor):
 
 
 def converter_para_metros(valor_texto, unidade):
+    """Converte um valor informado em metros ou centimetros para metros."""
     valor = float(str(valor_texto).replace(",", "."))
     if unidade == "cm":
         return round(valor / 100, 2)
@@ -16,14 +20,17 @@ def converter_para_metros(valor_texto, unidade):
 
 
 def formatar_metros(valor):
+    """Formata um numero decimal como metragem."""
     return f"{valor:.2f}".replace(".", ",") + "m"
 
 
 def formatar_area(valor):
+    """Formata um numero decimal como area em metros quadrados."""
     return f"{valor:.2f}".replace(".", ",") + " m²"
 
 
 def calcular_melhor_aproveitamento(variacoes, largura_m, altura_m, quantidade, extra_stock=None):
+    """Escolhe a variacao de material que gera o menor desperdicio."""
     extra_stock = extra_stock or {}
     area_total = round(largura_m * altura_m * quantidade, 2)
     candidatos = []

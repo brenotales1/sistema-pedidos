@@ -1,3 +1,5 @@
+"""Regras de negocio para cadastro e padronizacao de materiais."""
+
 import unicodedata
 
 from database.db import db
@@ -18,12 +20,14 @@ MATERIAIS_PADRAO = [
 
 
 def normalizar_nome(valor):
+    """Normaliza nomes para comparacoes sem acentos e espacos duplicados."""
     texto = " ".join(str(valor or "").strip().lower().split())
     texto = unicodedata.normalize("NFKD", texto)
     return "".join(char for char in texto if not unicodedata.combining(char))
 
 
 def redefinir_metros_material(material, metros_disponiveis):
+    """Recria as bobinas de um material a partir da metragem total."""
     restante = round(max(metros_disponiveis, 0), 2)
     material.bobinas.clear()
 
@@ -34,6 +38,7 @@ def redefinir_metros_material(material, metros_disponiveis):
 
 
 def consolidar_materiais_repetidos():
+    """Une materiais repetidos preservando estoque e referencias de pedidos."""
     grupos = {}
 
     for material in Material.query.all():
@@ -67,6 +72,7 @@ def consolidar_materiais_repetidos():
 
 
 def seed_materials():
+    """Cadastra categorias, materiais e bobinas iniciais quando necessario."""
     materiais = Material.query.all()
     categorias_existentes = {categoria.nome for categoria in CategoriaMaterial.query.all()}
     novas_categorias = []

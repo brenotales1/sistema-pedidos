@@ -1,3 +1,5 @@
+"""Rotas e operacoes de interface para pedidos."""
+
 from flask import Blueprint, redirect, render_template, request, url_for
 
 from database.db import db
@@ -30,6 +32,7 @@ STATUS_PEDIDO = [
 
 
 def normalizar_status_pedido(status):
+    """Converte status antigos ou invalidos para um status valido."""
     if status == "Pendente":
         return "Pagamento pendente"
     if status in STATUS_PEDIDO:
@@ -38,10 +41,12 @@ def normalizar_status_pedido(status):
 
 
 def obter_clientes_disponiveis():
+    """Retorna os nomes dos clientes para preencher o formulario de pedido."""
     return [cliente.nome for cliente in Cliente.query.order_by(Cliente.nome).all()]
 
 
 def construir_catalogo_materiais(extra_stock=None):
+    """Monta o catalogo de materiais disponiveis para a tela de pedido."""
     extra_stock = extra_stock or {}
     materiais = Material.query.all()
     materiais.sort(key=lambda item: (ORDEM_CATEGORIAS.get(item.categoria, 99), item.nome, item.largura_m))
@@ -68,6 +73,7 @@ def construir_catalogo_materiais(extra_stock=None):
 
 
 def dados_iniciais_formulario():
+    """Retorna os valores padrao para um novo formulario de pedido."""
     return {
         "cliente": "",
         "categoria": "",
@@ -80,6 +86,7 @@ def dados_iniciais_formulario():
 
 
 def extrair_form_data_pedido():
+    """Extrai e limpa os campos do formulario de pedido."""
     return {
         "cliente": request.form.get("cliente", "").strip(),
         "categoria": request.form.get("categoria", "").strip(),
@@ -92,6 +99,7 @@ def extrair_form_data_pedido():
 
 
 def form_data_do_pedido(pedido):
+    """Converte um pedido existente para dados editaveis no formulario."""
     return {
         "cliente": pedido.cliente_nome,
         "categoria": pedido.categoria,
@@ -104,6 +112,7 @@ def form_data_do_pedido(pedido):
 
 
 def obter_material_do_pedido(pedido):
+    """Localiza o material usado por um pedido ja cadastrado."""
     return Material.query.filter_by(
         categoria=pedido.categoria,
         nome=pedido.material_nome,
@@ -112,6 +121,7 @@ def obter_material_do_pedido(pedido):
 
 
 def obter_extra_stock_para_pedido(pedido):
+    """Libera virtualmente o estoque do pedido durante sua propria edicao."""
     material = obter_material_do_pedido(pedido)
     if not material:
         return {}
@@ -119,6 +129,7 @@ def obter_extra_stock_para_pedido(pedido):
 
 
 def renderizar_formulario_pedido(form_data, erro="", pedido=None):
+    """Renderiza o formulario de criacao ou edicao de pedido."""
     extra_stock = obter_extra_stock_para_pedido(pedido) if pedido else {}
     catalogo = construir_catalogo_materiais(extra_stock=extra_stock)
     clientes = obter_clientes_disponiveis()
@@ -137,6 +148,7 @@ def renderizar_formulario_pedido(form_data, erro="", pedido=None):
 
 
 def processar_salvamento_pedido(form_data, pedido=None):
+    """Valida dados, calcula aproveitamento, atualiza estoque e salva pedido."""
     try:
         quantidade = int(form_data["quantidade"])
         largura_m = converter_para_metros(form_data["largura"], form_data["unidade"])
@@ -207,6 +219,7 @@ def processar_salvamento_pedido(form_data, pedido=None):
 
 @pedido_bp.route("/pedidos")
 def lista_pedidos():
+    """Exibe a lista de pedidos com filtros de busca."""
     pedidos = Pedido.query.order_by(Pedido.id.desc()).all()
     busca = request.args.get("busca", "").strip()
     filtro = request.args.get("filtro", "id").strip()
@@ -251,6 +264,7 @@ def lista_pedidos():
 
 @pedido_bp.route("/pedidos/<int:id>/status", methods=["POST"])
 def atualizar_status_pedido(id):
+    """Atualiza o status de um pedido existente."""
     pedido = Pedido.query.get_or_404(id)
     status = request.form.get("status", "").strip()
 
@@ -263,6 +277,7 @@ def atualizar_status_pedido(id):
 
 @pedido_bp.route("/pedidos/novo", methods=["GET", "POST"])
 def novo_pedido():
+    """Exibe e processa o formulario de novo pedido."""
     form_data = dados_iniciais_formulario()
 
     if request.method == "POST":
@@ -277,6 +292,7 @@ def novo_pedido():
 
 @pedido_bp.route("/pedidos/<int:id>/editar", methods=["GET", "POST"])
 def editar_pedido(id):
+    """Exibe e processa o formulario de edicao de pedido."""
     pedido = Pedido.query.get_or_404(id)
 
     if request.method == "POST":
@@ -291,6 +307,7 @@ def editar_pedido(id):
 
 @pedido_bp.route("/pedidos/<int:id>/cancelar", methods=["POST"])
 def cancelar_pedido(id):
+    """Cancela um pedido e devolve sua metragem ao estoque."""
     pedido = Pedido.query.get_or_404(id)
     material = obter_material_do_pedido(pedido)
 
@@ -304,6 +321,7 @@ def cancelar_pedido(id):
 
 @pedido_bp.route("/pedidos/<int:id>")
 def detalhe_pedido(id):
+    """Exibe os detalhes calculados de um pedido."""
     pedido = Pedido.query.get_or_404(id)
 
     return render_template(

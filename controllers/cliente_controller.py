@@ -1,3 +1,5 @@
+"""Rotas e operacoes de interface para clientes."""
+
 from flask import Blueprint, jsonify, redirect, render_template, request, url_for
 
 from database.db import db
@@ -7,6 +9,7 @@ cliente_bp = Blueprint("cliente", __name__)
 
 
 def extrair_form_data_cliente(fonte):
+    """Extrai e limpa os campos de cliente enviados pela interface."""
     return {
         "nome": fonte.get("nome", "").strip(),
         "telefone": fonte.get("telefone", "").strip(),
@@ -15,12 +18,14 @@ def extrair_form_data_cliente(fonte):
 
 
 def preencher_cliente(cliente, form_data):
+    """Preenche um objeto Cliente com dados ja validados."""
     cliente.nome = form_data["nome"]
     cliente.telefone = form_data["telefone"] or None
     cliente.empresa = form_data["empresa"] or None
 
 
 def validar_cliente(form_data):
+    """Valida os campos obrigatorios do cadastro de cliente."""
     if not form_data["nome"]:
         return "Informe o nome do cliente."
 
@@ -29,12 +34,14 @@ def validar_cliente(form_data):
 
 @cliente_bp.route("/clientes")
 def lista_clientes():
+    """Exibe a listagem de clientes cadastrados."""
     clientes = Cliente.query.order_by(Cliente.nome).all()
     return render_template("clientes/lista.html", clientes=clientes)
 
 
 @cliente_bp.route("/clientes/novo", methods=["GET", "POST"])
 def novo_cliente():
+    """Exibe e processa o formulario de cadastro de cliente."""
     form_data = {"nome": "", "telefone": "", "empresa": ""}
 
     if request.method == "POST":
@@ -55,6 +62,7 @@ def novo_cliente():
 
 @cliente_bp.route("/clientes/<int:id>/editar", methods=["GET", "POST"])
 def editar_cliente(id):
+    """Exibe e processa o formulario de edicao de cliente."""
     cliente = Cliente.query.get_or_404(id)
     form_data = {
         "nome": cliente.nome,
@@ -78,6 +86,7 @@ def editar_cliente(id):
 
 @cliente_bp.route("/clientes/rapido", methods=["POST"])
 def criar_cliente_rapido():
+    """Cria um cliente por requisicao JSON a partir do formulario de pedido."""
     dados = request.get_json(silent=True) or {}
     form_data = extrair_form_data_cliente(dados)
     erro = validar_cliente(form_data)

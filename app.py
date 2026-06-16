@@ -1,3 +1,5 @@
+"""Ponto de entrada da aplicacao Flask."""
+
 from flask import Flask, redirect, url_for
 
 from database.db import db
@@ -9,10 +11,12 @@ from services.material_service import seed_materials
 
 
 def home():
+    """Redireciona a pagina inicial para a lista de pedidos."""
     return redirect(url_for("pedido.lista_pedidos"))
 
 
 def create_app():
+    """Cria e configura a aplicacao Flask."""
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -28,6 +32,7 @@ def create_app():
 
 
 def registrar_rotas(app):
+    """Registra os blueprints e a rota inicial."""
     app.register_blueprint(pedido_bp)
     app.register_blueprint(estoque_bp)
     app.register_blueprint(cliente_bp)
@@ -35,6 +40,7 @@ def registrar_rotas(app):
 
 
 def preparar_banco():
+    """Aplica migracoes, cria tabelas e cadastra dados iniciais."""
     aplicar_migracoes()
     db.create_all()
     seed_materials()
