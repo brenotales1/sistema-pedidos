@@ -6,13 +6,14 @@ from database.db import db
 
 TABELA_BOBINA_ESTOQUE = "bobina_estoque"
 COLUNA_LARGURA_BOBINA = "largura_bobina_usada_m"
-
+COLUNA_CODIGO_BARRAS = "codigo_barras"
 
 def aplicar_migracoes():
     """Executa todas as migracoes pendentes do banco local."""
     renomear_tabela_bobinas()
     renomear_coluna_largura_bobina()
     garantir_coluna_empresa_cliente()
+    garantir_coluna_codigo_barras_material()
     db.session.commit()
 
 
@@ -60,6 +61,15 @@ def garantir_coluna_empresa_cliente():
     if "empresa" not in listar_colunas("cliente"):
         executar_sql('ALTER TABLE cliente ADD COLUMN "empresa" VARCHAR(120)')
 
+def garantir_coluna_codigo_barras_material():
+    """Adiciona a coluna de codigo de barras na tabela de materiais quando ausente."""
+    if "material" not in listar_tabelas():
+        return
+
+    if COLUNA_CODIGO_BARRAS not in listar_colunas("material"):
+        executar_sql(
+            'ALTER TABLE material ADD COLUMN "codigo_barras" VARCHAR(50)'
+        )
 
 def encontrar_tabela_de_bobinas():
     """Procura uma tabela antiga com estrutura equivalente a bobinas."""

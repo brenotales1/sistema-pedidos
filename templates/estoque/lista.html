@@ -24,6 +24,30 @@
 <button type="button" class="btn-cancelar-form" id="cancelar-novo-tipo">Cancelar</button>
 </form>
 
+<form class="busca-estoque" method="get" action="{{ url_for('estoque.lista_estoque') }}">
+    <input
+        type="text"
+        name="busca"
+        value="{{ busca }}"
+        placeholder="Buscar por material ou código de barras"
+        aria-label="Buscar material ou código de barras"
+    >
+
+    <button class="btn" type="submit">Buscar</button>
+
+    {% if busca %}
+        <a class="btn-cancelar-form" href="{{ url_for('estoque.lista_estoque') }}">
+            Limpar
+        </a>
+    {% endif %}
+</form>
+
+{% if busca and not secoes|selectattr("itens")|list %}
+    <p class="estoque-vazio">
+        Nenhum material encontrado para "{{ busca }}".
+    </p>
+{% endif %}
+
 {% for secao in secoes %}
 <details class="estoque-secao" open>
 <summary>
@@ -36,6 +60,7 @@
 <thead>
 <tr>
 <th>Material</th>
+<th>Código de barras</th>
 <th>Largura</th>
 <th>Bobinas</th>
 <th>Metros restantes</th>
@@ -46,6 +71,7 @@
 {% for item in secao.itens %}
 <tr>
 <td>{{ item.nome }}</td>
+<td>{{ item.codigo_barras }}</td>
 <td>{{ item.largura }}</td>
 <td>{{ item.bobinas }}</td>
 <td>{{ item.metros_restantes }}</td>

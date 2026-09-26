@@ -3,6 +3,7 @@
 from flask import Blueprint, redirect, render_template, request, url_for
 
 from database.db import db
+from controllers.auth_required import login_required
 from models.cliente import Cliente
 from models.material import Material
 from models.pedido import Pedido
@@ -218,6 +219,7 @@ def processar_salvamento_pedido(form_data, pedido=None):
 
 
 @pedido_bp.route("/pedidos")
+@login_required
 def lista_pedidos():
     """Exibe a lista de pedidos com filtros de busca."""
     pedidos = Pedido.query.order_by(Pedido.id.desc()).all()
@@ -263,6 +265,7 @@ def lista_pedidos():
 
 
 @pedido_bp.route("/pedidos/<int:id>/status", methods=["POST"])
+@login_required
 def atualizar_status_pedido(id):
     """Atualiza o status de um pedido existente."""
     pedido = Pedido.query.get_or_404(id)
@@ -276,6 +279,7 @@ def atualizar_status_pedido(id):
 
 
 @pedido_bp.route("/pedidos/novo", methods=["GET", "POST"])
+@login_required
 def novo_pedido():
     """Exibe e processa o formulario de novo pedido."""
     form_data = dados_iniciais_formulario()
@@ -291,6 +295,7 @@ def novo_pedido():
 
 
 @pedido_bp.route("/pedidos/<int:id>/editar", methods=["GET", "POST"])
+@login_required
 def editar_pedido(id):
     """Exibe e processa o formulario de edicao de pedido."""
     pedido = Pedido.query.get_or_404(id)
@@ -306,6 +311,7 @@ def editar_pedido(id):
 
 
 @pedido_bp.route("/pedidos/<int:id>/cancelar", methods=["POST"])
+@login_required
 def cancelar_pedido(id):
     """Cancela um pedido e devolve sua metragem ao estoque."""
     pedido = Pedido.query.get_or_404(id)
@@ -320,6 +326,7 @@ def cancelar_pedido(id):
 
 
 @pedido_bp.route("/pedidos/<int:id>")
+@login_required
 def detalhe_pedido(id):
     """Exibe os detalhes calculados de um pedido."""
     pedido = Pedido.query.get_or_404(id)

@@ -4,6 +4,7 @@ from flask import Blueprint, jsonify, redirect, render_template, request, url_fo
 
 from database.db import db
 from models.cliente import Cliente
+from controllers.auth_required import login_required
 
 cliente_bp = Blueprint("cliente", __name__)
 
@@ -33,6 +34,7 @@ def validar_cliente(form_data):
 
 
 @cliente_bp.route("/clientes")
+@login_required
 def lista_clientes():
     """Exibe a listagem de clientes cadastrados."""
     clientes = Cliente.query.order_by(Cliente.nome).all()
@@ -40,6 +42,7 @@ def lista_clientes():
 
 
 @cliente_bp.route("/clientes/novo", methods=["GET", "POST"])
+@login_required
 def novo_cliente():
     """Exibe e processa o formulario de cadastro de cliente."""
     form_data = {"nome": "", "telefone": "", "empresa": ""}
@@ -61,6 +64,7 @@ def novo_cliente():
 
 
 @cliente_bp.route("/clientes/<int:id>/editar", methods=["GET", "POST"])
+@login_required
 def editar_cliente(id):
     """Exibe e processa o formulario de edicao de cliente."""
     cliente = Cliente.query.get_or_404(id)
@@ -85,6 +89,7 @@ def editar_cliente(id):
 
 
 @cliente_bp.route("/clientes/rapido", methods=["POST"])
+@login_required
 def criar_cliente_rapido():
     """Cria um cliente por requisicao JSON a partir do formulario de pedido."""
     dados = request.get_json(silent=True) or {}

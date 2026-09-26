@@ -8,6 +8,7 @@ from models.material import Material
 from services.constantes import METROS_POR_BOBINA
 from services.estoque_service import adicionar_bobina, ajustar_metros_disponiveis, remover_bobina
 from services.material_service import normalizar_nome
+from controllers.auth_required import login_required, admin_required
 
 estoque_bp = Blueprint("estoque", __name__)
 
@@ -18,9 +19,21 @@ ORDEM_CATEGORIAS = {
 }
 
 
-def construir_secoes_estoque():
+def construir_secoes_estoque(busca=""):
     """Agrupa materiais por categoria para exibicao na tela de estoque."""
     materiais = Material.query.all()
+
+    if busca:
+        busca_normalizada = normalizar_nome(busca)
+
+        materiais = [
+            material
+            for material in materiais
+            if (
+                busca_normalizada in normalizar_nome(material.nome)
+                or busca in (material.codigo_barras or "")
+            )
+        ]
     materiais.sort(key=lambda item: (ORDEM_CATEGORIAS.get(item.categoria, 99), item.nome, item.largura_m))
 
     categorias = [categoria.nome for categoria in CategoriaMaterial.query.order_by(CategoriaMaterial.nome).all()]
@@ -36,6 +49,7 @@ def construir_secoes_estoque():
             {
                 "id": material.id,
                 "nome": material.nome,
+                "codigo_barras": material.codigo_barras,
                 "largura": material.largura_formatada,
                 "bobinas": material.quantidade_bobinas,
                 "metros_restantes_valor": f"{material.metros_disponiveis:.2f}",
@@ -43,20 +57,41 @@ def construir_secoes_estoque():
             }
         )
 
-    return [
-        {"categoria": categoria, "itens": itens}
-        for categoria, itens in sorted(secoes.items(), key=lambda item: ORDEM_CATEGORIAS.get(item[0], 99))
-    ]
+    resultado = [
+    {"categoria": categoria, "itens": itens}
+    for categoria, itens in sorted(
+        secoes.items(),
+        key=lambda item: ORDEM_CATEGORIAS.get(item[0], 99)
+    )
+]
+
+    if busca:
+       resultado = [
+        secao
+        for secao in resultado
+        if secao["itens"]
+       ]
+
+    return resultado
 
 
 @estoque_bp.route("/estoque")
+@estoque_bp.route("/estoque")
+@login_required
 def lista_estoque():
     """Exibe a tela principal de estoque."""
-    secoes = construir_secoes_estoque()
-    return render_template("estoque/lista.html", secoes=secoes)
+    busca = request.args.get("busca", "").strip()
 
+    secoes = construir_secoes_estoque(busca)
+
+    return render_template(
+        "estoque/lista.html",
+        secoes=secoes,
+        busca=busca,
+    )
 
 @estoque_bp.route("/estoque/categoria/nova", methods=["POST"])
+@admin_required
 def nova_categoria():
     """Cadastra uma nova categoria de material."""
     nome = request.form.get("nome", "").strip()
@@ -81,14 +116,19 @@ def nova_categoria():
 
 
 @estoque_bp.route("/estoque/novo", methods=["GET", "POST"])
+@admin_required
 def novo_estoque():
     """Exibe e processa o formulario de cadastro de material."""
     erro = ""
-    categorias = [categoria.nome for categoria in CategoriaMaterial.query.order_by(CategoriaMaterial.nome).all()]
+    categorias = [
+        categoria.nome
+        for categoria in CategoriaMaterial.query.order_by(CategoriaMaterial.nome).all()
+    ]
 
     if request.method == "POST":
         categoria = request.form.get("categoria", "").strip()
         nome = request.form.get("nome", "").strip()
+        codigo_barras = request.form.get("codigo_barras", "").strip()
         largura_texto = request.form.get("largura_m", "").strip().replace(",", ".")
         unidades_texto = request.form.get("unidades", "1").strip()
 
@@ -99,35 +139,63 @@ def novo_estoque():
             largura_m = 0
             unidades = 0
 
-        if not categoria or not nome or largura_m <= 0 or unidades <= 0:
-            erro = "Preencha tipo, nome, largura e unidades com valores válidos."
-        else:
-            material = next(
-                (
-                    item
-                    for item in Material.query.filter_by(categoria=categoria).all()
-                    if normalizar_nome(item.nome) == normalizar_nome(nome)
-                    and round(item.largura_m, 2) == round(largura_m, 2)
-                ),
-                None,
+        if (
+            not categoria
+            or not nome
+            or not codigo_barras
+            or largura_m <= 0
+            or unidades <= 0
+        ):
+            erro = (
+                "Preencha tipo, nome, código de barras, "
+                "largura e unidades com valores válidos."
             )
+        else:
+            codigo_existente = Material.query.filter_by(
+                codigo_barras=codigo_barras
+            ).first()
 
-            if material:
-                erro = "Essa variação de material já existe nesse tipo e largura."
+            if codigo_existente:
+                erro = "Esse código de barras já está cadastrado."
             else:
-                material = Material(categoria=categoria, nome=nome, largura_m=largura_m)
-                db.session.add(material)
-                db.session.flush()
+                material = next(
+                    (
+                        item
+                        for item in Material.query.filter_by(categoria=categoria).all()
+                        if normalizar_nome(item.nome) == normalizar_nome(nome)
+                        and round(item.largura_m, 2) == round(largura_m, 2)
+                    ),
+                    None,
+                )
 
-                adicionar_bobina(material, unidades)
-                db.session.commit()
-                flash("Material cadastrado com sucesso.", "sucesso")
-                return redirect(url_for("estoque.lista_estoque"))
+                if material:
+                    erro = "Essa variação de material já existe nesse tipo e largura."
+                else:
+                    material = Material(
+                        categoria=categoria,
+                        nome=nome,
+                        largura_m=largura_m,
+                        codigo_barras=codigo_barras,
+                    )
 
-    return render_template("estoque/novo.html", erro=erro, categorias=categorias)
+                    db.session.add(material)
+                    db.session.flush()
+
+                    adicionar_bobina(material, unidades)
+                    db.session.commit()
+
+                    flash("Material cadastrado com sucesso.", "sucesso")
+                    return redirect(url_for("estoque.lista_estoque"))
+
+    return render_template(
+        "estoque/novo.html",
+        erro=erro,
+        categorias=categorias,
+    )
 
 
 @estoque_bp.route("/estoque/material/<int:material_id>/adicionar-unidade", methods=["POST"])
+@admin_required
 def adicionar_unidade(material_id):
     """Adiciona uma bobina ao material informado."""
     material = Material.query.get_or_404(material_id)
@@ -137,6 +205,7 @@ def adicionar_unidade(material_id):
 
 
 @estoque_bp.route("/estoque/material/<int:material_id>/remover-unidade", methods=["POST"])
+@admin_required
 def remover_unidade(material_id):
     """Remove uma bobina do material informado."""
     material = Material.query.get_or_404(material_id)
@@ -146,6 +215,7 @@ def remover_unidade(material_id):
 
 
 @estoque_bp.route("/estoque/material/<int:material_id>/editar-metros", methods=["POST"])
+@admin_required
 def editar_metros(material_id):
     """Atualiza manualmente a metragem disponivel de um material."""
     material = Material.query.get_or_404(material_id)
@@ -167,6 +237,7 @@ def editar_metros(material_id):
 
 
 @estoque_bp.route("/estoque/material/<int:material_id>/excluir", methods=["POST"])
+@admin_required
 def excluir_material(material_id):
     """Exclui um material cadastrado no estoque."""
     material = Material.query.get_or_404(material_id)

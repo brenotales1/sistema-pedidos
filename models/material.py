@@ -12,6 +12,7 @@ class Material(db.Model):
     categoria = db.Column(db.String(50), nullable=False)
     nome = db.Column(db.String(120), nullable=False)
     largura_m = db.Column(db.Float, nullable=False)
+    codigo_barras = db.Column(db.String(50), nullable=False, unique=True)
 
     bobinas = db.relationship(
         "BobinaEstoque",

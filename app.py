@@ -6,6 +6,8 @@ from database.db import db
 from controllers.cliente_controller import cliente_bp
 from controllers.estoque_controller import estoque_bp
 from controllers.pedido_controller import pedido_bp
+from controllers.auth_controller import auth_bp
+
 from services.database_migration_service import aplicar_migracoes
 from services.material_service import seed_materials
 
@@ -36,6 +38,7 @@ def registrar_rotas(app):
     app.register_blueprint(pedido_bp)
     app.register_blueprint(estoque_bp)
     app.register_blueprint(cliente_bp)
+    app.register_blueprint(auth_bp)
     app.add_url_rule("/", "home", home)
 
 
