@@ -46,24 +46,30 @@ Sistema web desenvolvido para centralizar a gestão de pedidos, clientes e contr
    | `DATABASE_URL` | URI de conexão do banco de dados |
 5. Crie o banco e rode o schema:
    As tabelas e migrações são verificadas e criadas automaticamente na inicialização da aplicação (`app.py`). O schema DDL de referência está disponível em `database/schema.sql`.
-6. Rode as migrations/seed (se houver):
-   O seed inicial de materiais padrão é executado automaticamente na inicialização da aplicação (`app.py`).
-7. Suba o projeto:
+6. Crie os usuários padrão do sistema:
+   ```bash
+   python criar_usuario.py
+   ```
+   *(Cria o administrador `admin@sistema.com` e o funcionário `funcionario@sistema.com` com senha padrão `123456`)*
+7. Rode as migrations/seed (se houver):
+   O seed inicial de materiais padrão com código de barras é executado automaticamente na inicialização da aplicação (`app.py`).
+8. Suba o projeto:
    ```bash
    python app.py
    ```
-8. Acesse em `http://127.0.0.1:5000` (ou `http://localhost:5000`).
+9. Acesse em `http://127.0.0.1:5000` (ou `http://localhost:5000`) e faça login.
 
 ## Estrutura do repositório
 ```
-/controllers     — Controladores (Blueprints) de rotas (clientes, estoque, pedidos)
+/controllers     — Controladores (Blueprints) de rotas (auth, clientes, estoque, pedidos)
 /database        — Configuração de conexão do banco (db.py) e script DDL (schema.sql)
-/docs            — Documentação técnica (DER, dicionário de dados, diagramas UML e capturas de tela)
+/docs            — Documentação técnica das entregas E1 a E5 (DER, UML, testes, relatórios de sprint)
 /instance        — Arquivo do banco de dados SQLite local (database.db)
-/models          — Modelos e entidades SQLAlchemy (Cliente, Pedido, Material, Bobina, etc.)
-/services        — Regras de negócio, cálculo de aproveitamento, serviços de migração e seeds
-/static          — Arquivos estáticos (CSS, imagens, scripts JS e uploads)
+/models          — Modelos e entidades SQLAlchemy (Usuario, Cliente, Pedido, Material, Bobina, etc.)
+/services        — Regras de negócio, cálculo de corte, serviços de migração e seeds
+/static          — Arquivos estáticos (CSS, imagens, scripts JS)
 /templates       — Templates HTML renderizados pelo Jinja2
+/tests           — Suíte de testes automatizados unitários e de integração (unittest)
 ```
 
 ## Convenções da equipe
