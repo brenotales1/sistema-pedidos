@@ -10,12 +10,42 @@ from models.pedido import Pedido
 from services.constantes import METROS_POR_BOBINA
 
 MATERIAIS_PADRAO = [
-    {"categoria": "Adesivo", "nome": "Adesivo Branco Brilho", "largura_m": 1.27},
-    {"categoria": "Adesivo", "nome": "Adesivo Blackout", "largura_m": 1.27},
-    {"categoria": "Adesivo", "nome": "Adesivo Transparente", "largura_m": 1.27},
-    {"categoria": "Lona", "nome": "Lona Branca Brilho", "largura_m": 3.20},
-    {"categoria": "Lona", "nome": "Lona Translúcida", "largura_m": 3.20},
-    {"categoria": "Tecido", "nome": "Tecido convencional", "largura_m": 1.50},
+    {
+        "categoria": "Adesivo",
+        "nome": "Adesivo Branco Brilho",
+        "largura_m": 1.27,
+        "codigo_barras": "7890000000028",
+    },
+    {
+        "categoria": "Adesivo",
+        "nome": "Adesivo Blackout",
+        "largura_m": 1.27,
+        "codigo_barras": "7890000000035",
+    },
+    {
+        "categoria": "Adesivo",
+        "nome": "Adesivo Transparente",
+        "largura_m": 1.27,
+        "codigo_barras": "7890000000042",
+    },
+    {
+        "categoria": "Lona",
+        "nome": "Lona Branca Brilho",
+        "largura_m": 3.20,
+        "codigo_barras": "7890000000011",
+    },
+    {
+        "categoria": "Lona",
+        "nome": "Lona Translúcida",
+        "largura_m": 3.20,
+        "codigo_barras": "7890000000059",
+    },
+    {
+        "categoria": "Tecido",
+        "nome": "Tecido convencional",
+        "largura_m": 1.50,
+        "codigo_barras": "7890000000066",
+    },
 ]
 
 
