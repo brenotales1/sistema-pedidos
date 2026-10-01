@@ -15,6 +15,14 @@
         <img class="brand-logo" src="{{ url_for('static', filename='img/center-logo.png') }}" alt="Center Comunicacao Visual">
         <div class="brand-text">Sistema de Pedidos</div>
     </div>
+    <div class="user-info">
+        {% if session.get('usuario_id') %}
+            <span class="user-name">👤 {{ session.get('usuario_nome') }} ({{ 'Admin' if session.get('usuario_perfil') == 'admin' else 'Funcionário' }})</span>
+            <a href="{{ url_for('auth.logout') }}" class="btn-logout">Sair</a>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn-login">Entrar</a>
+        {% endif %}
+    </div>
 </div>
 
 <div class="menu">
