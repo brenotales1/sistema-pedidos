@@ -6,7 +6,7 @@ from database.db import db
 from models.categoria_material import CategoriaMaterial
 from models.material import Material
 from services.constantes import METROS_POR_BOBINA
-from services.estoque_service import adicionar_bobina, ajustar_metros_disponiveis, registrar_entrada_estoque, remover_bobina
+from services.estoque_service import adicionar_bobina, ajustar_metros_disponiveis, listar_movimentacoes, registrar_entrada_estoque, remover_bobina
 from services.material_service import buscar_material_por_codigo_barras, normalizar_nome
 from controllers.auth_required import login_required, admin_required
 
@@ -75,7 +75,6 @@ def construir_secoes_estoque(busca=""):
     return resultado
 
 
-@estoque_bp.route("/estoque")
 @estoque_bp.route("/estoque")
 @login_required
 def lista_estoque():
@@ -291,6 +290,42 @@ def entrada_estoque():
     )
     return redirect(url_for("estoque.lista_estoque"))
 
+@estoque_bp.route("/estoque/movimentacoes")
+@login_required
+def movimentacoes():
+    """Exibe o histórico de movimentações do estoque."""
+
+    tipo = request.args.get("tipo", "").strip().lower()
+    material_id_texto = request.args.get("material_id", "").strip()
+
+    material_id = None
+
+    if material_id_texto:
+        try:
+            material_id = int(material_id_texto)
+        except ValueError:
+            material_id = None
+
+    tipos_validos = {"entrada", "saida", "ajuste"}
+
+    if tipo not in tipos_validos:
+        tipo = None
+
+    movimentacoes_lista = listar_movimentacoes(
+        limite=100,
+        material_id=material_id,
+        tipo=tipo,
+    )
+
+    materiais = Material.query.order_by(Material.nome, Material.largura_m).all()
+
+    return render_template(
+        "estoque/movimentacoes.html",
+        movimentacoes=movimentacoes_lista,
+        materiais=materiais,
+        filtro_tipo=tipo,
+        filtro_material_id=material_id,
+    )
 
 @estoque_bp.route("/estoque/api/material/codigo/<codigo_barras>")
 @login_required

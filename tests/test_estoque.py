@@ -333,6 +333,142 @@ class EstoqueTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("/login", response.location)
 
+    # --- Testes da US #6 (Consulta de movimentações do estoque) ---
 
+    def test_movimentacoes_estoque_sem_login(self):
+        """US #6: Rota de movimentações exige autenticação."""
+        client_deslogado = self.app.test_client()
+
+        response = client_deslogado.get(
+            "/estoque/movimentacoes",
+            follow_redirects=False
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login", response.location)
+
+    def test_movimentacoes_estoque_exibe_historico(self):
+        """US #6: Tela exibe as movimentações registradas no estoque."""
+
+        with self.app.app_context():
+            mat = Material.query.filter_by(
+                codigo_barras="7890000000011"
+            ).first()
+
+            registrar_entrada_estoque(
+                material=mat,
+                quantidade_bobinas=2,
+                usuario_id=1,
+                motivo="Entrada para teste da US #6"
+            )
+
+            db.session.commit()
+
+        response = self.client.get("/estoque/movimentacoes")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "Movimentações do Estoque".encode("utf-8"),
+            response.data
+        )
+        self.assertIn(
+            "Lona Branca Brilho".encode("utf-8"),
+            response.data
+        )
+        self.assertIn(
+            "Entrada para teste da US #6".encode("utf-8"),
+            response.data
+        )
+        self.assertIn(
+            "Admin Teste".encode("utf-8"),
+            response.data
+        )
+
+    def test_movimentacoes_estoque_mais_recentes_primeiro(self):
+        """US #6: Movimentações são exibidas da mais recente para a mais antiga."""
+
+        with self.app.app_context():
+            mat = Material.query.filter_by(
+                codigo_barras="7890000000011"
+            ).first()
+
+            mov_antiga = registrar_entrada_estoque(
+                material=mat,
+                quantidade_bobinas=1,
+                usuario_id=1,
+                motivo="MOVIMENTACAO MAIS ANTIGA"
+            )
+
+            db.session.commit()
+
+            mov_nova = registrar_entrada_estoque(
+                material=mat,
+                quantidade_bobinas=2,
+                usuario_id=1,
+                motivo="MOVIMENTACAO MAIS RECENTE"
+            )
+
+            db.session.commit()
+
+            self.assertGreater(
+                mov_nova.data_hora,
+                mov_antiga.data_hora
+            )
+
+        response = self.client.get("/estoque/movimentacoes")
+
+        self.assertEqual(response.status_code, 200)
+
+        conteudo = response.data.decode("utf-8")
+
+        pos_nova = conteudo.find("MOVIMENTACAO MAIS RECENTE")
+        pos_antiga = conteudo.find("MOVIMENTACAO MAIS ANTIGA")
+
+        self.assertNotEqual(pos_nova, -1)
+        self.assertNotEqual(pos_antiga, -1)
+        self.assertLess(pos_nova, pos_antiga)
+
+    def test_movimentacoes_estoque_filtros_tipo_e_material(self):
+        """US #6: Filtros por tipo e material funcionam corretamente."""
+
+        with self.app.app_context():
+            mat = Material.query.filter_by(
+                codigo_barras="7890000000011"
+            ).first()
+
+            registrar_entrada_estoque(
+                material=mat,
+                quantidade_bobinas=1,
+                usuario_id=1,
+                motivo="ENTRADA FILTRADA"
+            )
+
+            db.session.commit()
+
+            material_id = mat.id
+
+        # Filtro por tipo
+        response = self.client.get(
+            "/estoque/movimentacoes?tipo=entrada"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "ENTRADA FILTRADA".encode("utf-8"),
+            response.data
+        )
+
+        # Filtro por material
+        response = self.client.get(
+            f"/estoque/movimentacoes?material_id={material_id}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "ENTRADA FILTRADA".encode("utf-8"),
+            response.data
+        )
+
+        
 if __name__ == "__main__":
     unittest.main()

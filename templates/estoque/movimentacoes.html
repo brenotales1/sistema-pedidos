@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Movimentações do Estoque</h1>
+        <p>Histórico de entradas, saídas e ajustes realizados no estoque.</p>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 20px;">
+    <form method="GET" action="{{ url_for('estoque.movimentacoes') }}"
+          style="display: flex; gap: 12px; align-items: end; flex-wrap: wrap;">
+
+        <div>
+            <label for="tipo"><strong>Tipo</strong></label>
+            <select name="tipo" id="tipo">
+                <option value="">Todos</option>
+                <option value="entrada" {% if filtro_tipo == "entrada" %}selected{% endif %}>
+                    Entrada
+                </option>
+                <option value="saida" {% if filtro_tipo == "saida" %}selected{% endif %}>
+                    Saída
+                </option>
+                <option value="ajuste" {% if filtro_tipo == "ajuste" %}selected{% endif %}>
+                    Ajuste
+                </option>
+            </select>
+        </div>
+
+        <div>
+            <label for="material_id"><strong>Material</strong></label>
+            <select name="material_id" id="material_id">
+                <option value="">Todos</option>
+
+                {% for material in materiais %}
+                <option value="{{ material.id }}"
+                    {% if filtro_material_id == material.id %}selected{% endif %}>
+                    {{ material.nome }} - {{ material.largura_formatada }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn-primary">
+            Filtrar
+        </button>
+
+        <a href="{{ url_for('estoque.movimentacoes') }}" class="btn-secondary">
+            Limpar
+        </a>
+
+    </form>
+</div>
+
+<div class="card">
+
+    {% if movimentacoes %}
+
+    <div style="overflow-x: auto;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Data/Hora</th>
+                    <th>Material</th>
+                    <th>Tipo</th>
+                    <th>Quantidade</th>
+                    <th>Usuário Responsável</th>
+                    <th>Motivo</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for movimentacao in movimentacoes %}
+                <tr>
+                    <td>
+                        {{ movimentacao.data_hora_formatada }}
+                    </td>
+
+                    <td>
+                        <strong>{{ movimentacao.material.nome }}</strong><br>
+                        <small>
+                            {{ movimentacao.material.largura_formatada }}
+                        </small>
+                    </td>
+
+                    <td>
+                        {% if movimentacao.tipo == "entrada" %}
+                            <span>Entrada</span>
+                        {% elif movimentacao.tipo == "saida" %}
+                            <span>Saída</span>
+                        {% else %}
+                            <span>Ajuste</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {{ "%.2f"|format(movimentacao.quantidade_metros) }} m
+                        {% if movimentacao.quantidade_bobinas %}
+                            <br>
+                            <small>
+                                {{ movimentacao.quantidade_bobinas }} bobina(s)
+                            </small>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if movimentacao.usuario %}
+                            {{ movimentacao.usuario.nome }}
+                        {% else %}
+                            Não informado
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {{ movimentacao.motivo or "—" }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+
+    <div style="text-align: center; padding: 40px;">
+        <h3>Nenhuma movimentação encontrada</h3>
+        <p>Não existem movimentações para os filtros selecionados.</p>
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

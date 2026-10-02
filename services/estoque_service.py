@@ -129,3 +129,26 @@ def consumir_material(material, metros_necessarios):
             material.bobinas.remove(bobina)
 
     return restante <= 0
+
+def listar_movimentacoes(limite=100, material_id=None, tipo=None):
+    """Lista movimentações do estoque, das mais recentes para as mais antigas."""
+
+    consulta = MovimentacaoEstoque.query
+
+    if material_id:
+        consulta = consulta.filter(
+            MovimentacaoEstoque.material_id == material_id
+        )
+
+    if tipo:
+        consulta = consulta.filter(
+            MovimentacaoEstoque.tipo == tipo
+        )
+
+    return (
+        consulta
+        .order_by(MovimentacaoEstoque.data_hora.desc())
+        .limit(limite)
+        .all()
+    )
+
