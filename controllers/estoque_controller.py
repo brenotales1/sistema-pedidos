@@ -1,12 +1,12 @@
 """Rotas e operacoes de interface para estoque."""
 
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
 
 from database.db import db
 from models.categoria_material import CategoriaMaterial
 from models.material import Material
 from services.constantes import METROS_POR_BOBINA
-from services.estoque_service import adicionar_bobina, ajustar_metros_disponiveis, remover_bobina
+from services.estoque_service import adicionar_bobina, ajustar_metros_disponiveis, registrar_entrada_estoque, remover_bobina
 from services.material_service import buscar_material_por_codigo_barras, normalizar_nome
 from controllers.auth_required import login_required, admin_required
 
@@ -247,6 +247,48 @@ def excluir_material(material_id):
     db.session.commit()
     flash(f'Material "{descricao_material}" excluído com sucesso.', "sucesso")
 
+    return redirect(url_for("estoque.lista_estoque"))
+
+
+@estoque_bp.route("/estoque/entrada", methods=["POST"])
+@login_required
+def entrada_estoque():
+    """Processa a entrada de material no estoque via codigo de barras."""
+    codigo_barras = request.form.get("codigo_barras", "").strip()
+    quantidade_texto = request.form.get("quantidade_bobinas", "1").strip()
+    motivo = request.form.get("motivo", "").strip() or "Entrada via código de barras"
+
+    if not codigo_barras:
+        flash("Informe o código de barras do material.", "erro")
+        return redirect(url_for("estoque.lista_estoque"))
+
+    try:
+        quantidade_bobinas = int(quantidade_texto)
+    except ValueError:
+        quantidade_bobinas = 0
+
+    if quantidade_bobinas <= 0:
+        flash("A quantidade de bobinas deve ser maior que zero.", "erro")
+        return redirect(url_for("estoque.lista_estoque"))
+
+    material = buscar_material_por_codigo_barras(codigo_barras)
+    if not material:
+        flash(f'Material com código de barras "{codigo_barras}" não encontrado.', "erro")
+        return redirect(url_for("estoque.lista_estoque"))
+
+    usuario_id = session.get("usuario_id")
+    registrar_entrada_estoque(
+        material=material,
+        quantidade_bobinas=quantidade_bobinas,
+        usuario_id=usuario_id,
+        motivo=motivo,
+    )
+    db.session.commit()
+
+    flash(
+        f"Entrada de {quantidade_bobinas} bobina(s) registrada com sucesso para {material.nome} ({material.largura_formatada}).",
+        "sucesso",
+    )
     return redirect(url_for("estoque.lista_estoque"))
 
 

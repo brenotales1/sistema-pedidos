@@ -1,6 +1,9 @@
-"""Regras de negocio para controle de bobinas no estoque."""
+"""Regras de negocio para controle de bobinas e movimentacoes de estoque."""
 
+from datetime import datetime
+from database.db import db
 from models.bobina_estoque import BobinaEstoque
+from models.movimentacao_estoque import MovimentacaoEstoque
 from services.constantes import METROS_POR_BOBINA
 
 
@@ -23,6 +26,39 @@ def adicionar_bobina(material, quantidade=1):
     """Adiciona uma ou mais bobinas completas ao material."""
     for _ in range(max(quantidade, 0)):
         material.bobinas.append(BobinaEstoque(metros_restantes=METROS_POR_BOBINA))
+
+
+def registrar_entrada_estoque(
+    material,
+    quantidade_bobinas=1,
+    metros_por_bobina=METROS_POR_BOBINA,
+    usuario_id=None,
+    motivo="Entrada via código de barras",
+):
+    """Registra entrada de bobinas no estoque e grava o historico de movimentacao."""
+    if quantidade_bobinas <= 0:
+        raise ValueError("A quantidade de bobinas deve ser maior que zero.")
+
+    metros_unitario = float(metros_por_bobina if metros_por_bobina > 0 else METROS_POR_BOBINA)
+    metros_totais = round(quantidade_bobinas * metros_unitario, 2)
+
+    # Adiciona as bobinas fisicas ao material
+    for _ in range(quantidade_bobinas):
+        material.bobinas.append(BobinaEstoque(metros_restantes=metros_unitario))
+
+    # Cria o registro formal de movimentacao
+    movimentacao = MovimentacaoEstoque(
+        material_id=material.id,
+        tipo="entrada",
+        quantidade_metros=metros_totais,
+        quantidade_bobinas=quantidade_bobinas,
+        motivo=motivo,
+        usuario_id=usuario_id,
+        data_hora=datetime.utcnow(),
+    )
+
+    db.session.add(movimentacao)
+    return movimentacao
 
 
 def remover_bobina(material):
