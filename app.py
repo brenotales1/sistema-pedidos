@@ -17,12 +17,19 @@ def home():
     return redirect(url_for("pedido.lista_pedidos"))
 
 
-def create_app():
-    """Cria e configura a aplicacao Flask."""
+def create_app(test_config=None):
+    """Cria e configura a aplicacao Flask.
+
+    ``test_config`` permite sobrescrever a configuracao antes da
+    inicializacao do SQLAlchemy, garantindo isolamento nos testes.
+    """
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = "dev"
+
+    if test_config:
+        app.config.update(test_config)
 
     db.init_app(app)
     registrar_rotas(app)
@@ -49,8 +56,6 @@ def preparar_banco():
     seed_materials()
 
 
-app = create_app()
-
-
 if __name__ == "__main__":
+    app = create_app()
     app.run(debug=True)
