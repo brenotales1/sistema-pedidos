@@ -46,21 +46,50 @@
     {% endif %}
 </form>
 
-<div class="identificar-codigo-barras">
-<h3>📦 Identificar Material por Código de Barras</h3>
-<p class="estoque-subtitle">Escaneie com o leitor USB ou digite o código manualmente.</p>
-<div class="identificar-input-grupo">
-    <input
-        type="text"
-        id="input-codigo-barras"
-        placeholder="Digite ou escaneie o código"
-        aria-label="Código de barras do material"
-        autocomplete="off"
-        autofocus
-    >
-    <button class="btn" type="button" id="btn-identificar">Identificar</button>
-</div>
-<div id="resultado-codigo-barras"></div>
+<div class="codigo-barras-painel">
+    <div class="identificar-codigo-barras">
+        <h3>📦 Identificar Material por Código de Barras</h3>
+        <p class="estoque-subtitle">Escaneie com o leitor USB ou digite o código para consulta instantânea.</p>
+        <div class="identificar-input-grupo">
+            <input
+                type="text"
+                id="input-codigo-barras"
+                placeholder="Digite ou escaneie o código"
+                aria-label="Código de barras do material"
+                autocomplete="off"
+                autofocus
+            >
+            <button class="btn" type="button" id="btn-identificar">Identificar</button>
+        </div>
+        <div id="resultado-codigo-barras"></div>
+    </div>
+
+    <div class="entrada-codigo-barras">
+        <h3>📥 Registrar Entrada de Estoque (Leitor / Código)</h3>
+        <p class="estoque-subtitle">Escaneie a bobina e informe a quantidade para dar entrada automática.</p>
+        <form class="entrada-input-grupo" method="post" action="{{ url_for('estoque.entrada_estoque') }}">
+            <input
+                type="text"
+                name="codigo_barras"
+                id="input-entrada-codigo"
+                placeholder="Código de barras da bobina"
+                aria-label="Código de barras para entrada"
+                required
+            >
+            <input
+                type="number"
+                name="quantidade_bobinas"
+                value="1"
+                min="1"
+                step="1"
+                aria-label="Quantidade de bobinas"
+                title="Quantidade de bobinas (50m cada)"
+                style="max-width: 90px;"
+                required
+            >
+            <button class="btn" type="submit">+ Entrada</button>
+        </form>
+    </div>
 </div>
 
 {% if busca and not secoes|selectattr("itens")|list %}

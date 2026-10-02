@@ -332,3 +332,52 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+
+.codigo-barras-painel{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap:16px;
+    margin-bottom:18px;
+}
+
+.entrada-codigo-barras{
+    background:white;
+    border-radius:8px;
+    padding:18px 20px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+}
+
+.entrada-codigo-barras h3{
+    margin:0 0 6px;
+    font-size:16px;
+    color:#2c3e50;
+}
+
+.entrada-input-grupo{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+    flex-wrap:wrap;
+    background:transparent;
+    padding:0;
+    max-width:none;
+    box-shadow:none;
+}
+
+.entrada-input-grupo input{
+    padding:10px 14px;
+    border:2px solid #27ae60;
+    border-radius:4px;
+    font-size:15px;
+    outline:none;
+}
+
+.entrada-input-grupo input:focus{
+    border-color:#1e8449;
+    box-shadow:0 0 0 3px rgba(39, 174, 96, 0.2);
+}
+
+.entrada-input-grupo input[type="text"]{
+    flex:1;
+    min-width:180px;
+}
