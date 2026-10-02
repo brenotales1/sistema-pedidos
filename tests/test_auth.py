@@ -123,6 +123,35 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Cadastrar Material".encode("utf-8"), response.data)
 
+    def test_tela_estoque_oculta_acoes_administrativas_para_funcionario(self):
+        """Funcionário não vê botões e formulários administrativos na tela de estoque."""
+        self.client.post(
+            "/login",
+            data={"email": "funcionario@sistema.com", "senha": "123456"},
+        )
+        response = self.client.get("/estoque")
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("+ Cadastrar Material".encode("utf-8"), response.data)
+        self.assertNotIn("+ Tipo".encode("utf-8"), response.data)
+        self.assertNotIn("<th>Ações</th>".encode("utf-8"), response.data)
+        self.assertNotIn("+ Bobina".encode("utf-8"), response.data)
+        # Mas consegue ver os dados do estoque e o leitor de código de barras
+        self.assertIn("Identificar Material por Código de Barras".encode("utf-8"), response.data)
+        self.assertIn("Lona Branca Brilho".encode("utf-8"), response.data)
+
+    def test_tela_estoque_exibe_acoes_administrativas_para_admin(self):
+        """Administrador visualiza todos os botões e opções de gestão no estoque."""
+        self.client.post(
+            "/login",
+            data={"email": "admin@sistema.com", "senha": "123456"},
+        )
+        response = self.client.get("/estoque")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("+ Cadastrar Material".encode("utf-8"), response.data)
+        self.assertIn("+ Tipo".encode("utf-8"), response.data)
+        self.assertIn("<th>Ações</th>".encode("utf-8"), response.data)
+        self.assertIn("+ Bobina".encode("utf-8"), response.data)
+
     def test_bloqueio_rotas_sem_login(self):
         """Acesso a rotas protegidas sem autenticacao redireciona para login."""
         rotas = ["/estoque", "/pedidos", "/clientes", "/estoque/novo"]
