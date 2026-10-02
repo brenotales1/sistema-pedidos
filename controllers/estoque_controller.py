@@ -1,13 +1,13 @@
 """Rotas e operacoes de interface para estoque."""
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 
 from database.db import db
 from models.categoria_material import CategoriaMaterial
 from models.material import Material
 from services.constantes import METROS_POR_BOBINA
 from services.estoque_service import adicionar_bobina, ajustar_metros_disponiveis, remover_bobina
-from services.material_service import normalizar_nome
+from services.material_service import buscar_material_por_codigo_barras, normalizar_nome
 from controllers.auth_required import login_required, admin_required
 
 estoque_bp = Blueprint("estoque", __name__)
@@ -248,3 +248,22 @@ def excluir_material(material_id):
     flash(f'Material "{descricao_material}" excluído com sucesso.', "sucesso")
 
     return redirect(url_for("estoque.lista_estoque"))
+
+
+@estoque_bp.route("/estoque/api/material/codigo/<codigo_barras>")
+@login_required
+def api_material_por_codigo(codigo_barras):
+    """Retorna os dados de um material pelo codigo de barras em formato JSON."""
+    material = buscar_material_por_codigo_barras(codigo_barras)
+
+    if not material:
+        return jsonify({"erro": "Material não encontrado"}), 404
+
+    return jsonify({
+        "id": material.id,
+        "nome": material.nome,
+        "categoria": material.categoria,
+        "largura": material.largura_formatada,
+        "metros_disponiveis": material.metros_disponiveis_formatados,
+        "codigo_barras": material.codigo_barras,
+    })

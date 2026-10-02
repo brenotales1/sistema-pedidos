@@ -56,6 +56,14 @@ def normalizar_nome(valor):
     return "".join(char for char in texto if not unicodedata.combining(char))
 
 
+def buscar_material_por_codigo_barras(codigo):
+    """Busca um material pelo codigo de barras exato. Retorna None se nao encontrado."""
+    if not codigo or not codigo.strip():
+        return None
+
+    return Material.query.filter_by(codigo_barras=codigo.strip()).first()
+
+
 def redefinir_metros_material(material, metros_disponiveis):
     """Recria as bobinas de um material a partir da metragem total."""
     restante = round(max(metros_disponiveis, 0), 2)
