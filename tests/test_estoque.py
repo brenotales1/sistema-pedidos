@@ -6,9 +6,11 @@ from database.db import db
 from models.bobina_estoque import BobinaEstoque
 from models.categoria_material import CategoriaMaterial
 from models.material import Material
+from models.movimentacao_estoque import MovimentacaoEstoque
 from models.usuario import Usuario
 from services.constantes import METROS_POR_BOBINA
 from services.estoque_service import (
+    registrar_entrada_estoque,
     adicionar_bobina,
     ajustar_metros_disponiveis,
     consumir_material,
@@ -224,6 +226,111 @@ class EstoqueTestCase(unittest.TestCase):
             mat_depois = Material.query.filter_by(codigo_barras="7890000000011").first()
             self.assertEqual(mat_depois.metros_disponiveis, metros_antes)
             self.assertEqual(mat_depois.quantidade_bobinas, bobinas_antes)
+
+
+    # --- Testes da US #5 (Registrar entrada de material pelo código de barras) ---
+    def test_registrar_entrada_estoque_service_sucesso(self):
+        """US #5: Adiciona bobinas, atualiza metragem e registra MovimentacaoEstoque."""
+        with self.app.app_context():
+            mat = Material.query.filter_by(codigo_barras="7890000000011").first()
+            bobinas_iniciais = mat.quantidade_bobinas
+            metros_iniciais = mat.metros_disponiveis
+
+            mov = registrar_entrada_estoque(
+                material=mat,
+                quantidade_bobinas=2,
+                usuario_id=1,
+                motivo="Entrada de teste",
+            )
+            db.session.commit()
+
+            self.assertEqual(mat.quantidade_bobinas, bobinas_iniciais + 2)
+            self.assertEqual(mat.metros_disponiveis, metros_iniciais + 100.0)
+            self.assertEqual(mov.tipo, "entrada")
+            self.assertEqual(mov.quantidade_bobinas, 2)
+            self.assertEqual(mov.quantidade_metros, 100.0)
+            self.assertEqual(mov.motivo, "Entrada de teste")
+
+            # Verifica persistência no banco
+            mov_salva = MovimentacaoEstoque.query.filter_by(id=mov.id).first()
+            self.assertIsNotNone(mov_salva)
+            self.assertEqual(mov_salva.material_id, mat.id)
+
+    def test_registrar_entrada_estoque_service_recusa_quantidade_invalida(self):
+        """US #5 / CT05: Lança ValueError quando quantidade de bobinas é <= 0."""
+        with self.app.app_context():
+            mat = Material.query.filter_by(codigo_barras="7890000000011").first()
+            with self.assertRaises(ValueError):
+                registrar_entrada_estoque(material=mat, quantidade_bobinas=0)
+            with self.assertRaises(ValueError):
+                registrar_entrada_estoque(material=mat, quantidade_bobinas=-3)
+
+    def test_ct05_ct07_rota_entrada_estoque_sucesso(self):
+        """US #5 / CT07: Rota POST /estoque/entrada adiciona bobinas e grava histórico."""
+        with self.app.app_context():
+            mat = Material.query.filter_by(codigo_barras="7890000000011").first()
+            bobinas_antes = mat.quantidade_bobinas
+
+        response = self.client.post(
+            "/estoque/entrada",
+            data={
+                "codigo_barras": "7890000000011",
+                "quantidade_bobinas": "3",
+                "motivo": "Recebimento fornecedor",
+            },
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Entrada de 3 bobina(s) registrada com sucesso".encode("utf-8"), response.data)
+
+        with self.app.app_context():
+            mat = Material.query.filter_by(codigo_barras="7890000000011").first()
+            self.assertEqual(mat.quantidade_bobinas, bobinas_antes + 3)
+
+            # Verifica se gerou registro de movimentacao
+            mov = MovimentacaoEstoque.query.filter_by(
+                material_id=mat.id, tipo="entrada"
+            ).order_by(MovimentacaoEstoque.id.desc()).first()
+            self.assertIsNotNone(mov)
+            self.assertEqual(mov.quantidade_bobinas, 3)
+            self.assertEqual(mov.quantidade_metros, 150.0)
+
+    def test_rota_entrada_estoque_quantidade_invalida(self):
+        """US #5 / CT05: Rota recusa entrada quando quantidade_bobinas <= 0."""
+        response = self.client.post(
+            "/estoque/entrada",
+            data={
+                "codigo_barras": "7890000000011",
+                "quantidade_bobinas": "0",
+            },
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("A quantidade de bobinas deve ser maior que zero".encode("utf-8"), response.data)
+
+    def test_rota_entrada_estoque_material_inexistente(self):
+        """US #5: Rota recusa entrada quando código de barras não existe."""
+        response = self.client.post(
+            "/estoque/entrada",
+            data={
+                "codigo_barras": "9999999999999_NAO_EXISTE",
+                "quantidade_bobinas": "1",
+            },
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("não encontrado".encode("utf-8"), response.data)
+
+    def test_rota_entrada_estoque_sem_login(self):
+        """US #5: Rota exige autenticação de login."""
+        client_deslogado = self.app.test_client()
+        response = client_deslogado.post(
+            "/estoque/entrada",
+            data={"codigo_barras": "7890000000011", "quantidade_bobinas": "1"},
+            follow_redirects=False,
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login", response.location)
 
 
 if __name__ == "__main__":
