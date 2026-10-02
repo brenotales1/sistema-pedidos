@@ -9,12 +9,15 @@
 <h2>Estoque</h2>
 <p class="estoque-subtitle">Expanda um tipo para ver cada variação de largura, as bobinas disponíveis e os metros restantes.</p>
 </div>
+{% if session.get('usuario_perfil') == 'admin' %}
 <div class="estoque-header-actions">
 <button type="button" class="btn-sec" id="abrir-novo-tipo">+ Tipo</button>
 <a href="/estoque/novo" class="btn">+ Cadastrar Material</a>
 </div>
+{% endif %}
 </div>
 
+{% if session.get('usuario_perfil') == 'admin' %}
 <form class="novo-tipo-form" id="novo-tipo-form" method="post" action="{{ url_for('estoque.nova_categoria') }}">
 <div>
 <label>Tipo de material</label>
@@ -23,6 +26,7 @@
 <button class="btn" type="submit">Salvar Tipo</button>
 <button type="button" class="btn-cancelar-form" id="cancelar-novo-tipo">Cancelar</button>
 </form>
+{% endif %}
 
 <form class="busca-estoque" method="get" action="{{ url_for('estoque.lista_estoque') }}">
     <input
@@ -81,7 +85,9 @@
 <th>Largura</th>
 <th>Bobinas</th>
 <th>Metros restantes</th>
+{% if session.get('usuario_perfil') == 'admin' %}
 <th>Ações</th>
+{% endif %}
 </tr>
 </thead>
 <tbody>
@@ -92,6 +98,7 @@
 <td>{{ item.largura }}</td>
 <td>{{ item.bobinas }}</td>
 <td>{{ item.metros_restantes }}</td>
+{% if session.get('usuario_perfil') == 'admin' %}
 <td>
 <div class="acoes-estoque">
 <form method="post" action="{{ url_for('estoque.adicionar_unidade', material_id=item.id) }}">
@@ -111,6 +118,7 @@
 <button class="btn btn-small" type="submit">Salvar</button>
 </form>
 </td>
+{% endif %}
 </tr>
 {% endfor %}
 </tbody>
@@ -125,6 +133,7 @@
 <p>Nenhum material cadastrado no estoque.</p>
 {% endif %}
 
+{% if session.get('usuario_perfil') == 'admin' %}
 <div class="modal-backdrop" id="modal-excluir-material" aria-hidden="true">
 <div class="modal-confirmacao" role="dialog" aria-modal="true" aria-labelledby="modal-excluir-titulo">
 <h3 id="modal-excluir-titulo">Excluir material?</h3>
@@ -135,6 +144,7 @@
 </div>
 </div>
 </div>
+{% endif %}
 
 <script>
 const abrirNovoTipo = document.getElementById("abrir-novo-tipo");
@@ -146,14 +156,18 @@ const cancelarExclusaoButton = document.getElementById("cancelar-exclusao-materi
 const confirmarExclusaoButton = document.getElementById("confirmar-exclusao-material");
 let formExclusaoSelecionado = null;
 
-abrirNovoTipo.addEventListener("click", function () {
-    novoTipoForm.classList.add("is-visible");
-    novoTipoForm.querySelector("input").focus();
-});
+if (abrirNovoTipo && novoTipoForm) {
+    abrirNovoTipo.addEventListener("click", function () {
+        novoTipoForm.classList.add("is-visible");
+        novoTipoForm.querySelector("input").focus();
+    });
+}
 
-cancelarNovoTipo.addEventListener("click", function () {
-    novoTipoForm.classList.remove("is-visible");
-});
+if (cancelarNovoTipo && novoTipoForm) {
+    cancelarNovoTipo.addEventListener("click", function () {
+        novoTipoForm.classList.remove("is-visible");
+    });
+}
 
 document.querySelectorAll("[data-editar-estoque]").forEach(function (button) {
     button.addEventListener("click", function () {
@@ -176,27 +190,35 @@ document.querySelectorAll("[data-excluir-material]").forEach(function (button) {
 });
 
 function fecharModalExclusao() {
-    modalExclusao.classList.remove("is-visible");
-    modalExclusao.setAttribute("aria-hidden", "true");
+    if (modalExclusao) {
+        modalExclusao.classList.remove("is-visible");
+        modalExclusao.setAttribute("aria-hidden", "true");
+    }
     formExclusaoSelecionado = null;
 }
 
-cancelarExclusaoButton.addEventListener("click", fecharModalExclusao);
+if (cancelarExclusaoButton) {
+    cancelarExclusaoButton.addEventListener("click", fecharModalExclusao);
+}
 
-modalExclusao.addEventListener("click", function (event) {
-    if (event.target === modalExclusao) {
-        fecharModalExclusao();
-    }
-});
+if (modalExclusao) {
+    modalExclusao.addEventListener("click", function (event) {
+        if (event.target === modalExclusao) {
+            fecharModalExclusao();
+        }
+    });
+}
 
-confirmarExclusaoButton.addEventListener("click", function () {
-    if (formExclusaoSelecionado) {
-        formExclusaoSelecionado.submit();
-    }
-});
+if (confirmarExclusaoButton) {
+    confirmarExclusaoButton.addEventListener("click", function () {
+        if (formExclusaoSelecionado) {
+            formExclusaoSelecionado.submit();
+        }
+    });
+}
 
 document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" && modalExclusao.classList.contains("is-visible")) {
+    if (event.key === "Escape" && modalExclusao && modalExclusao.classList.contains("is-visible")) {
         fecharModalExclusao();
     }
 });
