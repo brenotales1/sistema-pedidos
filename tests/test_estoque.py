@@ -15,6 +15,7 @@ from services.estoque_service import (
     devolver_material,
     remover_bobina,
 )
+from services.material_service import buscar_material_por_codigo_barras
 
 
 class EstoqueTestCase(unittest.TestCase):
@@ -165,6 +166,64 @@ class EstoqueTestCase(unittest.TestCase):
             # Devolve 30 metros
             devolver_material(mat, 30.0)
             self.assertEqual(mat.metros_disponiveis, 100.0)
+
+    def test_buscar_material_por_codigo_barras_service(self):
+        """US #4: Valida busca por codigo de barras na camada de servico."""
+        with self.app.app_context():
+            # Codigo existente
+            mat = buscar_material_por_codigo_barras("7890000000011")
+            self.assertIsNotNone(mat)
+            self.assertEqual(mat.nome, "Lona Branca Brilho")
+
+            # Codigo inexistente
+            mat_inexistente = buscar_material_por_codigo_barras("CODIGO_NAO_EXISTE")
+            self.assertIsNone(mat_inexistente)
+
+            # Codigo vazio ou nulo
+            self.assertIsNone(buscar_material_por_codigo_barras(""))
+            self.assertIsNone(buscar_material_por_codigo_barras(None))
+
+    def test_api_material_por_codigo_existente(self):
+        """US #4: Rota API retorna 200 e dados JSON do material identificado."""
+        response = self.client.get("/estoque/api/material/codigo/7890000000011")
+        self.assertEqual(response.status_code, 200)
+        dados = response.get_json()
+        self.assertIsNotNone(dados)
+        self.assertEqual(dados["nome"], "Lona Branca Brilho")
+        self.assertEqual(dados["categoria"], "Lona")
+        self.assertEqual(dados["codigo_barras"], "7890000000011")
+        self.assertIn("largura", dados)
+        self.assertIn("metros_disponiveis", dados)
+
+    def test_api_material_por_codigo_inexistente(self):
+        """US #4: Rota API retorna 404 e mensagem de erro para codigo inexistente."""
+        response = self.client.get("/estoque/api/material/codigo/CODIGO_INEXISTENTE_999")
+        self.assertEqual(response.status_code, 404)
+        dados = response.get_json()
+        self.assertIsNotNone(dados)
+        self.assertEqual(dados.get("erro"), "Material não encontrado")
+
+    def test_api_material_por_codigo_sem_login(self):
+        """US #4: Acesso a API sem autenticacao e redirecionado para login."""
+        client_deslogado = self.app.test_client()
+        response = client_deslogado.get("/estoque/api/material/codigo/7890000000011", follow_redirects=False)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login", response.location)
+
+    def test_api_identificacao_nao_altera_estoque(self):
+        """US #4: Identificacao de material nao altera quantidade nem metragem de estoque."""
+        with self.app.app_context():
+            mat = Material.query.filter_by(codigo_barras="7890000000011").first()
+            metros_antes = mat.metros_disponiveis
+            bobinas_antes = mat.quantidade_bobinas
+
+        # Executa consulta na API
+        self.client.get("/estoque/api/material/codigo/7890000000011")
+
+        with self.app.app_context():
+            mat_depois = Material.query.filter_by(codigo_barras="7890000000011").first()
+            self.assertEqual(mat_depois.metros_disponiveis, metros_antes)
+            self.assertEqual(mat_depois.quantidade_bobinas, bobinas_antes)
 
 
 if __name__ == "__main__":
