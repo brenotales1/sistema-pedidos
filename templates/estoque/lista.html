@@ -42,6 +42,23 @@
     {% endif %}
 </form>
 
+<div class="identificar-codigo-barras">
+<h3>📦 Identificar Material por Código de Barras</h3>
+<p class="estoque-subtitle">Escaneie com o leitor USB ou digite o código manualmente.</p>
+<div class="identificar-input-grupo">
+    <input
+        type="text"
+        id="input-codigo-barras"
+        placeholder="Digite ou escaneie o código"
+        aria-label="Código de barras do material"
+        autocomplete="off"
+        autofocus
+    >
+    <button class="btn" type="button" id="btn-identificar">Identificar</button>
+</div>
+<div id="resultado-codigo-barras"></div>
+</div>
+
 {% if busca and not secoes|selectattr("itens")|list %}
     <p class="estoque-vazio">
         Nenhum material encontrado para "{{ busca }}".
@@ -181,6 +198,69 @@ confirmarExclusaoButton.addEventListener("click", function () {
 document.addEventListener("keydown", function (event) {
     if (event.key === "Escape" && modalExclusao.classList.contains("is-visible")) {
         fecharModalExclusao();
+    }
+});
+
+/* --- Identificação rápida por código de barras (US #4) --- */
+const inputCodigo = document.getElementById("input-codigo-barras");
+const btnIdentificar = document.getElementById("btn-identificar");
+const resultadoCodigo = document.getElementById("resultado-codigo-barras");
+
+function identificarMaterial() {
+    const codigo = inputCodigo.value.trim();
+    if (!codigo) {
+        resultadoCodigo.innerHTML = "";
+        inputCodigo.focus();
+        return;
+    }
+
+    resultadoCodigo.innerHTML = '<p class="estoque-subtitle">Buscando...</p>';
+
+    fetch("/estoque/api/material/codigo/" + encodeURIComponent(codigo))
+        .then(function (response) {
+            return response.json().then(function (data) {
+                return { status: response.status, data: data };
+            });
+        })
+        .then(function (result) {
+            if (result.status === 404) {
+                resultadoCodigo.innerHTML =
+                    '<div class="resultado-card resultado-erro">' +
+                    '<p><strong>Material não encontrado</strong></p>' +
+                    '<p>Nenhum material cadastrado com o código <code>' + codigo + '</code>.</p>' +
+                    '</div>';
+            } else {
+                var m = result.data;
+                resultadoCodigo.innerHTML =
+                    '<div class="resultado-card resultado-sucesso">' +
+                    '<h4>' + m.nome + '</h4>' +
+                    '<table class="resultado-tabela">' +
+                    '<tr><td><strong>Categoria</strong></td><td>' + m.categoria + '</td></tr>' +
+                    '<tr><td><strong>Código de barras</strong></td><td>' + m.codigo_barras + '</td></tr>' +
+                    '<tr><td><strong>Largura</strong></td><td>' + m.largura + '</td></tr>' +
+                    '<tr><td><strong>Metros disponíveis</strong></td><td>' + m.metros_disponiveis + '</td></tr>' +
+                    '</table>' +
+                    '</div>';
+            }
+            inputCodigo.value = "";
+            inputCodigo.focus();
+        })
+        .catch(function () {
+            resultadoCodigo.innerHTML =
+                '<div class="resultado-card resultado-erro">' +
+                '<p><strong>Erro de conexão</strong></p>' +
+                '<p>Não foi possível consultar o servidor.</p>' +
+                '</div>';
+            inputCodigo.focus();
+        });
+}
+
+btnIdentificar.addEventListener("click", identificarMaterial);
+
+inputCodigo.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        identificarMaterial();
     }
 });
 </script>
