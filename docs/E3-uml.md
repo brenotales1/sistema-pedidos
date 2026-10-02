@@ -59,9 +59,13 @@ classDiagram
 
   class MovimentacaoEstoque {
     +id: int
+    +material_id: int
     +tipo: enum
-    +quantidade: float
-    +data: datetime
+    +quantidade_metros: float
+    +quantidade_bobinas: int
+    +motivo: string
+    +usuario_id: int
+    +data_hora: datetime
   }
 
   class Material {

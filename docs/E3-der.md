@@ -123,11 +123,13 @@ erDiagram
 | Campo | Tipo | Restrições | Descrição |
 |---|---|---|---|
 | id | INTEGER | PK | Identificador da movimentacao |
-| usuario_id | INTEGER | FK -> usuario.id, NOT NULL | Usuario que registrou a movimentacao |
 | material_id | INTEGER | FK -> material.id, NOT NULL | Material movimentado |
-| tipo | VARCHAR(20) | NOT NULL, CHECK IN ('entrada','saida','ajuste') | Tipo da movimentacao |
-| quantidade | FLOAT | NOT NULL, CHECK (quantidade > 0) | Quantidade movimentada |
-| data | DATETIME | NOT NULL | Data da movimentacao |
+| tipo | VARCHAR(20) | NOT NULL, CHECK IN ('entrada','saida','ajuste') | Tipo da movimentacao (entrada, saida ou ajuste) |
+| quantidade_metros | FLOAT | NOT NULL DEFAULT 0.0, CHECK (quantidade_metros >= 0) | Quantidade em metros movimentada |
+| quantidade_bobinas | INTEGER | NOT NULL DEFAULT 0, CHECK (quantidade_bobinas >= 0) | Quantidade de bobinas movimentadas |
+| motivo | VARCHAR(255) | | Motivo ou observação da movimentação |
+| usuario_id | INTEGER | FK -> usuario.id, NOT NULL | Usuario que registrou a movimentacao |
+| data_hora | DATETIME | NOT NULL | Data e hora em que a movimentacao foi registrada |
 
 ### Tabela: consumo_material (associativa N:N entre pedido e material)
 

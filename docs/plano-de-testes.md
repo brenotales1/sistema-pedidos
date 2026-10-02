@@ -29,5 +29,7 @@ Nenhum PR é aceito na `main` ou `develop` se: (a) algum teste automatizado exis
 | **CT03** | #2 | Cadastro de material com código de barras duplicado | `codigo_barras = "7890000000011"` (já cadastrado no banco) | Sistema recusa o cadastro (constraint de unicidade) e informa erro | **Alta** |
 | **CT04** | #3 | Consulta por material inexistente no estoque | Busca por código ou nome não cadastrado | Sistema informa que o material não foi encontrado | **Média** |
 | **CT05** | #5 | Entrada de estoque com quantidade inválida (menor ou igual a zero) | `quantidade = 0` ou `quantidade = -5.0` | Sistema recusa a movimentação e exige quantidade positiva | **Alta** |
+| **CT06** | #4 | Identificação de material por código de barras via API | `GET /estoque/api/material/codigo/<codigo>` | Código existente retorna 200 com dados do material; código inexistente retorna 404 com mensagem de erro; não altera estoque | **Alta** |
+| **CT07** | #5, #6 | Registro de entrada de estoque válida e persistência no histórico | `codigo_barras = "7890000000011"`, `quantidade_bobinas = 2` (ou metragem positiva) | Estoque do material é incrementado e a movimentação é gravada na tabela `movimentacao_estoque` | **Alta** |
 
 *(A partir da E5, cada linha nova aqui precisa de uma evidência de execução correspondente — ver `E5-E8_evidencias_de_teste.md`.)*
