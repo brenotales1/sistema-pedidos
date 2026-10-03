@@ -1,7 +1,7 @@
 # Relatório de Entrega — Sprint 1 — Sistema de Pedidos e Controle de Estoque
 
 **Período:** 04/09/2026 a 18/09/2026 (Semana 5 — Entrega E5)  
-**Sprint Review:** 18/09/2026, com o professor da disciplina  
+**Sprint Review:** 18/09/2026 
 **Equipe:** Breno Tales de Oliveira Leite (RA: 2840482423029) — Daniel Fredi Soares Pereira (RA: 2840482421054) · Laboratório de Engenharia de Software · ADS Fatec Ribeirão Preto
 
 ---
@@ -42,15 +42,15 @@ Consulte o guia passo a passo presente no [`README.md`](file:///c:/Users/breno/O
 ## 3. Backlog atualizado
 
 Ao fim da Sprint 1, os cards no quadro do projeto foram atualizados:
-- **US #1** (Acesso com usuário e senha — 3 pts) ➔ **Concluído**
-- **US #2** (Cadastrar material com código de barras — 3 pts) ➔ **Concluído**
-- **US #3** (Consultar materiais cadastrados — 3 pts) ➔ **Concluído**
-- **Total entregue na Sprint 1:** 9 Story Points (100% da meta da Sprint 1)
+- **US #1** (Acesso com usuário e senha) ➔ **Concluído**
+- **US #2** (Cadastrar material com código de barras) ➔ **Concluído**
+- **US #3** (Consultar materiais cadastrados) ➔ **Concluído**
+- **Total entregue na Sprint 1:** 100% da meta da Sprint 1 (3 histórias entregues)
 
 **Histórias planejadas para a Sprint 2 (E6):**
-- **US #4** — Identificar material pelo código de barras (5 pts)
-- **US #5** — Registrar entrada de material pelo código de barras (5 pts)
-- **US #6** — Consultar movimentações do estoque (3 pts)
+- **US #4** — Identificar material pelo código de barras
+- **US #5** — Registrar entrada de material pelo código de barras
+- **US #6** — Consultar movimentações do estoque
 
 ---
 

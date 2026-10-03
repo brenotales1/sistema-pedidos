@@ -1,66 +1,41 @@
-# Relatório Individual de Contribuição --- Daniel Fredi Soares Pereira
+# Relatório Individual de Contribuição — Sprint 2 — Daniel Fredi Soares Pereira (RA 2840482421054)
 
-## Identificação
+**Papel nesta sprint:** Desenvolvedor Backend / Relatórios / Infraestrutura de Testes
 
-**Projeto:** Sistema Web de Controle de Estoque para Empresa de
-Comunicação Visual\
-**Sprint:** Sprint 2\
-**Entrega:** E6\
-**Aluno:** Daniel Fredi Soares Pereira\
-**RA:** 2840482421054
+---
 
-## 1. Participação na Sprint
+## 1. O que fiz
 
-Durante a Sprint 2, minha participação esteve concentrada na
-implementação, integração e validação técnica das funcionalidades
-previstas para a evolução do sistema de estoque.
+| Item | PR/commit | Status |
+|---|---|---|
+| Isolamento do banco de dados de testes utilizando arquivo temporário `database_test.db` para evitar concorrência com o banco local (`tests/base.py`) | Commit `f63a915` | Mergeado |
+| Implementação do serviço de listagem e filtros de movimentações de estoque em ordem decrescente — US #6 (`services/estoque_service.py`) | Commit `eac4bf1` | Mergeado |
+| Criação da rota protegida `GET /estoque/movimentacoes` com suporte a filtros por tipo e material (`controllers/estoque_controller.py`) | Commit `eac4bf1` | Mergeado |
+| Desenvolvimento do template responsivo de movimentações e inclusão do link de acesso no menu de navegação superior (`templates/estoque/movimentacoes.html`, `templates/base.html`) | Commit `eac4bf1` | Mergeado |
+| Criação de 4 testes automatizados para autenticação, listagem, ordenação e filtros de movimentações (`tests/test_estoque.py`) | Commit `eac4bf1` | Mergeado |
+| Consolidação da documentação de encerramento da Sprint 2 na entrega E6 (`docs/sprints/`) | Commit `08c8390` | Mergeado |
 
-As funcionalidades trabalhadas foram: - US #4 --- Identificação por
-Código de Barras; - US #5 --- Registro de Entrada por Código de
-Barras; - US #6 --- Consulta e Relatório de Movimentações.
+---
 
-## 2. Atividades técnicas realizadas
+## 2. Rituais que participei
 
--   Implementação e integração das funcionalidades relacionadas ao
-    estoque.
--   Desenvolvimento das rotas e serviços necessários.
--   Implementação da consulta de movimentações.
--   Implementação dos filtros por tipo e material.
--   Criação da interface de consulta.
--   Inclusão do acesso à tela de movimentações no menu.
--   Criação e atualização dos testes automatizados.
--   Correção do isolamento do banco de dados dos testes.
--   Validação da suíte completa antes da publicação.
--   Organização das alterações em commits separados.
+- [x] Dailies/weeklies (alinhamentos de desenvolvimento da Sprint 2)
+- [x] Sprint Review (apresentação dos incrementos da Sprint 2)
+- [ ] Retrospectiva da Sprint 2
 
-## 3. Commits relacionados
+---
 
-``` text
-f63a915 fix(test): isola banco de dados dos testes
-eac4bf1 feat(estoque): adiciona tela de consulta e relatorio de movimentacoes do estoque
-```
+## 3. PRs de colegas que revisei
 
-Os commits foram publicados no repositório remoto após a validação dos
-testes.
+| PR / Commit | Autor | Comentário resumido |
+|---|---|---|
+| Commit `2273ce9` e `ead291a` (Busca e identificação rápida por código de barras — US #4) | Breno Tales | Aprovei o endpoint `/estoque/api/material/codigo/<codigo_barras>` e a integração visual para leitor USB com captura automática. |
+| Commit `f8486bf` e `dcc4f1f` (Model MovimentacaoEstoque e painel de entrada de estoque — US #5) | Breno Tales | Aprovei o modelo `MovimentacaoEstoque`, a regra de negócio de entrada de bobinas e a ocultação de botões restritos para perfil funcionário. |
+| Commits `f465806`, `43a1223` e `da62ae4` (Testes automatizados cobrindo CT05, CT06 e CT07) | Breno Tales | Validei a execução completa da suíte de testes com cobertura para os novos cenários de teste da sprint. |
 
-## 4. Testes
+---
 
-A execução final apresentou:
+## 4. Dificuldades e o que aprendi
 
-``` text
-Ran 41 tests in 13.814s
-
-OK
-```
-
-Na US #6, foram validados acesso sem autenticação, exibição do
-histórico, ordenação das movimentações e filtros por tipo e material.
-
-## 5. Conclusão
-
-A participação técnica contribuiu para a implementação, testes e
-integração das funcionalidades de estoque previstas, além da organização
-da entrega em commits versionados.
-
-A Sprint foi encerrada com as US #4, #5 e #6 concluídas, totalizando 13
-pontos.
+- **Filtros Dinâmicos com SQLAlchemy:** Aprofundei o uso de queries condicionais no SQLAlchemy combinando filtros opcionais de tipo de movimentação e ID de material de forma limpa no service.
+- **Isolamento de Banco em Testes:** Entendi a importância de gerenciar a criação e destruição de instâncias de teste em arquivo dedicado para evitar vazamento de estado e conflitos com a base de desenvolvimento.
