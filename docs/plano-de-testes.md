@@ -8,19 +8,23 @@
 
 | Tipo de teste | O que cobre | Ferramenta | Quando roda |
 |---|---|---|---|
-| **Unitário** | Regras de negócio isoladas (validações de cadastro, cálculo de dimensões, movimentação de bobinas e aproveitamento de corte) | Python `unittest` | A cada PR (CI) |
-| **Integração** | Rotas da API, controle de acesso RBAC e controladores Flask contra banco de teste isolado | Flask Test Client + `unittest` | A cada PR (CI) |
-| **Manual / Aceitação** | Fluxos completos de ponta a ponta antes de cada entrega | Roteiro manual com leitor USB | Ao fim de cada sprint |
+| **Unitário** | Regras de negócio isoladas (validações, cálculo de corte e estoque) | Python `unittest` | A cada alteração e PR |
+| **Integração** | Rotas da aplicação, permissões de usuário e banco de testes | Flask Test Client + `unittest` | A cada PR |
+| **Manual / Aceitação** | Fluxos completos na interface (incluindo o leitor de código de barras) | Roteiro manual | Ao fim de cada sprint |
+
+*Observação sobre o WhatsApp:* Nos testes automatizados, vamos simular o envio das mensagens usando mocks (`unittest.mock`), sem disparar mensagens reais para não gastar créditos de API e nem colocar números de telefone reais nos testes.
 
 ---
 
 ## 2. Critério de bloqueio de merge
 
-Nenhum PR é aceito na `main` ou `develop` se: (a) algum teste automatizado existente quebrar; (b) uma nova regra de negócio for adicionada sem teste correspondente; (c) não houver revisão e aprovação de ao menos 1 outro integrante da equipe.
+Nenhum PR deve ser aceito na `main` ou `develop` se: (a) algum teste automatizado existente falhar; (b) uma nova regra for adicionada sem teste correspondente; ou (c) faltar a revisão de pelo menos um outro integrante da equipe.
 
 ---
 
-## 3. Casos de teste planejados (41 testes automatizados)
+## 3. Casos de teste
+
+### 3.1. Casos implementados (Sprints 1 e 2 — 41 testes)
 
 | ID | História (E2) | Cenário | Entrada | Resultado esperado | Prioridade |
 |:---:|:---:|---|---|---|:---:|
@@ -60,8 +64,43 @@ Nenhum PR é aceito na `main` ou `develop` se: (a) algum teste automatizado exis
 | **CT34** | — | Adição, remoção e redistribuição de bobinas no `estoque_service` | Operações de acréscimo e ajuste de metragem de bobinas | Metragem total sincronizada com precisão | **Média** |
 | **CT35** | — | Baixa automatizada e estorno de bobinas no estoque | Consumo de metragem em pedido e cancelamento com devolução | Saldo recalculado e bobinas atualizadas | **Média** |
 | **CT36** | — | Conversão de medidas (cm para m) com precisão | Conversão de valores em centímetros para metros | Retorno numérico exato com arredondamento seguro | **Média** |
-| **CT37** | — | Algoritmo de aproveitamento de corte (padrão vs. rotacionado) | Cálculo de orientação ideal de corte em bobina de material | Escolha automática da orientação com menor desperdício de área | **Alta** |
-| **CT38** | — | Criação de pedido realiza baixa de metragem no estoque | Criação de pedido com dimensões e material especificado | Metragem consumida é subtraída do estoque do material | **Alta** |
-| **CT39** | — | Cancelamento de pedido estorna metragem ao estoque do material | Exclusão/cancelamento de pedido existente | Metragem é creditada de volta ao saldo do material | **Alta** |
-| **CT40** | — | Atualização de status de pedido no fluxo de produção | Transição de status (ex.: 'Pendente' -> 'Em Produção' -> 'Concluído') | Novo status é persistido no banco de dados | **Média** |
-| **CT41** | — | Isolamento de banco de dados nos testes automatizados | Execução do setup de testes com `database_test.db` isolado | Testes rodam sem concorrência ou conflito com o banco de dev | **Alta** |
+| **CT37** | Cálculo de corte | Algoritmo de aproveitamento de corte (padrão vs. rotacionado) | Dimensões da peça e medidas das bobinas cadastradas | Escolha da orientação que menos gera sobra e rejeição de medidas inválidas | **Alta** |
+| **CT38** | — | Criação de pedido realiza baixa de metragem no estoque | Pedido criado com medidas e material especificado | Metragem consumida é descontada do estoque | **Alta** |
+| **CT39** | — | Cancelamento de pedido estorna metragem ao estoque | Cancelamento de um pedido existente | Metragem é devolvida ao saldo do material | **Alta** |
+| **CT40** | — | Atualização de status de pedido no fluxo de produção | Mudança de status do pedido ('Pendente', 'Em Produção', 'Concluído') | Novo status é salvo no banco de dados | **Média** |
+| **CT41** | — | Isolamento de banco de dados nos testes automatizados | Execução dos testes usando banco isolado (`database_test.db`) | Testes rodam sem mexer no banco de desenvolvimento | **Alta** |
+
+---
+
+### 3.2. Casos planejados para o WhatsApp (Sprint 3 e 4)
+
+| ID | História (E2) | Cenário | Entrada | Resultado esperado | Prioridade |
+|:---:|:---:|---|---|---|:---:|
+| **CT42** | #7, #8 | Envio de notificação no WhatsApp com sucesso | Pedido atualizado e telefone válido do cliente | Pedido é salvo e envio da mensagem é confirmado (simulado com mock) | **Alta** |
+| **CT43** | #8, #9 | Falha ou erro no envio do WhatsApp | Serviço de envio simulando erro (timeout ou API fora) | Sistema avisa que houve erro no envio e não grava como enviado | **Alta** |
+| **CT44** | #7, #8 | Cliente com telefone inválido ou sem número | Pedido com cliente sem telefone ou formato incorreto | Sistema barra o envio e avisa que o telefone precisa ser corrigido | **Alta** |
+| **CT45** | #9 | Envio automático quando o pedido muda de status | Pedido alterado para 'Pronto para retirada' | Sistema dispara a notificação sozinho e registra no histórico | **Alta** |
+| **CT46** | #10 | Consulta do histórico de mensagens enviadas | Administrador acessando a tela de histórico | Lista as notificações enviadas com pedido, cliente, data e status | **Média** |
+
+---
+
+## 4. Evidências de execução
+
+A cada entrega de sprint, salvamos os resultados dos testes e prints nas pastas:
+- `docs/sprints/` (relatórios e logs de execução dos testes)
+- `docs/screenshots/` (capturas de tela do sistema em funcionamento)
+
+---
+
+## 5. Rastreabilidade com o Backlog
+
+- **#1 (Login e perfis):** CT01, CT02, CT08–CT14
+- **#2 (Cadastro com código de barras):** CT03, CT20, CT21
+- **#3 (Consulta de estoque):** CT04, CT22
+- **#4 (Identificação por código de barras):** CT06, CT23–CT25
+- **#5 (Entrada de material):** CT05, CT07, CT26–CT29
+- **#6 (Histórico de movimentações):** CT07, CT30–CT33
+- **Cálculo de aproveitamento de corte:** CT36, CT37, CT38, CT39
+- **#7 e #8 (Envio manual de WhatsApp):** CT42, CT43, CT44
+- **#9 (Envio automático de WhatsApp):** CT43, CT45
+- **#10 (Histórico de notificações):** CT46

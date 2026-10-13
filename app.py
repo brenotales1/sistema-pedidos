@@ -1,5 +1,4 @@
-"""Ponto de entrada da aplicacao Flask."""
-
+import os
 from flask import Flask, redirect, url_for
 
 from database.db import db
@@ -10,6 +9,21 @@ from controllers.auth_controller import auth_bp
 
 from services.database_migration_service import aplicar_migracoes
 from services.material_service import seed_materials
+
+
+def _carregar_env():
+    """Carrega variaveis de ambiente de um arquivo .env local se existir."""
+    env_path = os.path.join(os.path.dirname(__file__), ".env")
+    if os.path.isfile(env_path):
+        with open(env_path, "r", encoding="utf-8") as f:
+            for linha in f:
+                linha = linha.strip()
+                if linha and not linha.startswith("#") and "=" in linha:
+                    chave, valor = linha.split("=", 1)
+                    os.environ.setdefault(chave.strip(), valor.strip().strip("\"'"))
+
+
+_carregar_env()
 
 
 def home():
@@ -24,9 +38,14 @@ def create_app(test_config=None):
     inicializacao do SQLAlchemy, garantindo isolamento nos testes.
     """
     app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+
+    database_url = os.environ.get("DATABASE_URL", "sqlite:///database.db")
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["SECRET_KEY"] = "dev"
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev")
 
     if test_config:
         app.config.update(test_config)
