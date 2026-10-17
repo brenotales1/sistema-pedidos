@@ -1,6 +1,6 @@
 """Rotas e operacoes de interface para pedidos."""
 
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, redirect, render_template, request, url_for, flash, session
 
 from database.db import db
 from controllers.auth_required import login_required
@@ -8,7 +8,9 @@ from models.cliente import Cliente
 from models.material import Material
 from models.pedido import Pedido
 from services.estoque_service import consumir_material, devolver_material
+from services.constantes import STATUS_PEDIDO
 from services.pedido_service import (
+    atualizar_status_com_notificacao,
     calcular_melhor_aproveitamento,
     converter_para_metros,
     formatar_area,
@@ -24,13 +26,6 @@ ORDEM_CATEGORIAS = {
     "Tecido": 3,
 }
 
-STATUS_PEDIDO = [
-    "Pagamento pendente",
-    "Aguardando produção",
-    "Pronto para retirada",
-    "Finalizado",
-]
-
 
 def normalizar_status_pedido(status):
     """Converte status antigos ou invalidos para um status valido."""
@@ -42,8 +37,8 @@ def normalizar_status_pedido(status):
 
 
 def obter_clientes_disponiveis():
-    """Retorna os nomes dos clientes para preencher o formulario de pedido."""
-    return [cliente.nome for cliente in Cliente.query.order_by(Cliente.nome).all()]
+    """Retorna os cadastros dos clientes para preencher o formulario de pedido."""
+    return Cliente.query.order_by(Cliente.nome, Cliente.id).all()
 
 
 def construir_catalogo_materiais(extra_stock=None):
@@ -76,7 +71,7 @@ def construir_catalogo_materiais(extra_stock=None):
 def dados_iniciais_formulario():
     """Retorna os valores padrao para um novo formulario de pedido."""
     return {
-        "cliente": "",
+        "cliente_id": "",
         "categoria": "",
         "tipo": "",
         "largura": "",
@@ -89,7 +84,7 @@ def dados_iniciais_formulario():
 def extrair_form_data_pedido():
     """Extrai e limpa os campos do formulario de pedido."""
     return {
-        "cliente": request.form.get("cliente", "").strip(),
+        "cliente_id": request.form.get("cliente_id", "").strip(),
         "categoria": request.form.get("categoria", "").strip(),
         "tipo": request.form.get("tipo", "").strip(),
         "largura": request.form.get("largura", "").strip(),
@@ -102,7 +97,7 @@ def extrair_form_data_pedido():
 def form_data_do_pedido(pedido):
     """Converte um pedido existente para dados editaveis no formulario."""
     return {
-        "cliente": pedido.cliente_nome,
+        "cliente_id": str(pedido.cliente_id) if pedido.cliente_id else "",
         "categoria": pedido.categoria,
         "tipo": pedido.material_nome,
         "largura": f"{pedido.largura_pedido_m:.2f}",
@@ -159,9 +154,19 @@ def processar_salvamento_pedido(form_data, pedido=None):
         largura_m = 0
         altura_m = 0
 
+    cliente_id = form_data["cliente_id"]
+    manter_legado = pedido is not None and pedido.cliente_id is None and not cliente_id
+    cliente = None
+    if cliente_id:
+        try:
+            cliente = db.session.get(Cliente, int(cliente_id))
+        except ValueError:
+            pass
+    if not cliente and not manter_legado:
+        return None, "Selecione um cliente cadastrado válido."
+
     if (
-        not form_data["cliente"]
-        or not form_data["categoria"]
+        not form_data["categoria"]
         or not form_data["tipo"]
         or quantidade <= 0
         or largura_m <= 0
@@ -201,7 +206,10 @@ def processar_salvamento_pedido(form_data, pedido=None):
         pedido = Pedido()
         db.session.add(pedido)
 
-    pedido.cliente_nome = form_data["cliente"]
+    if cliente:
+        if pedido.cliente_id != cliente.id:
+            pedido.cliente_nome = cliente.nome
+        pedido.cliente_id = cliente.id
     pedido.categoria = form_data["categoria"]
     pedido.material_nome = form_data["tipo"]
     pedido.largura_pedido_m = largura_m
@@ -271,9 +279,21 @@ def atualizar_status_pedido(id):
     pedido = Pedido.query.get_or_404(id)
     status = request.form.get("status", "").strip()
 
-    if status in STATUS_PEDIDO:
-        pedido.status = status
-        db.session.commit()
+    try:
+        resultado = atualizar_status_com_notificacao(pedido, status, usuario_id=session.get("usuario_id"))
+        if resultado is not None:
+            mensagens = {
+                "aceito": ("Pedido finalizado. Notificação do WhatsApp disparada com sucesso!", "sucesso"),
+                "desabilitado": ("Pedido finalizado. O envio de notificações pelo WhatsApp está desativado.", "info"),
+                "bloqueado_testing": ("Pedido finalizado. Notificação bloqueada no ambiente de testes.", "info"),
+                "sem_destinatario": ("Pedido finalizado. Notificação não enviada: verifique o telefone cadastrado do cliente.", "erro"),
+                "configuracao_invalida": ("Pedido finalizado. Notificação não enviada: serviço de WhatsApp indisponível.", "erro"),
+            }
+            mensagem, categoria = mensagens.get(resultado.status, (
+                "Pedido finalizado. Não foi possível confirmar a notificação pelo WhatsApp.", "erro"))
+            flash(mensagem, categoria)
+    except ValueError as erro:
+        flash(str(erro), "erro")
 
     return redirect(url_for("pedido.lista_pedidos"))
 

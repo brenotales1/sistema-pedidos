@@ -104,3 +104,82 @@ def calcular_melhor_aproveitamento(variacoes, largura_m, altura_m, quantidade, e
             candidato["sobra_largura"],
         ),
     )
+
+
+def atualizar_status_com_notificacao(pedido, novo_status, usuario_id=None):
+    """Persiste a transicao antes do envio e disputa apenas um update por status."""
+    from flask import current_app, session
+    from sqlalchemy import update
+    from database.db import db
+    from models.pedido import Pedido
+    from services.whatsapp_service import notificar_pedido_finalizado
+
+    from models.cliente import Cliente
+    from models.usuario import Usuario
+    from models.historico_status_pedido import HistoricoStatusPedido
+    from services.constantes import STATUS_PEDIDO
+    from models.notificacao_whatsapp import NotificacaoWhatsApp
+
+    if pedido is None or db.session.get(Pedido, pedido.id) is None:
+        raise ValueError("Pedido nao encontrado.")
+    if novo_status not in STATUS_PEDIDO:
+        raise ValueError("Status do pedido invalido.")
+    if not pedido.cliente_id or db.session.get(Cliente, pedido.cliente_id) is None:
+        raise ValueError("Vincule um cliente valido ao pedido antes de alterar o status.")
+    if usuario_id is None:
+        usuario_id = session.get("usuario_id")
+    if not usuario_id or db.session.get(Usuario, usuario_id) is None:
+        raise ValueError("Usuario responsavel invalido. Entre novamente no sistema.")
+
+    anterior = pedido.status
+    if anterior == novo_status:
+        current_app.logger.info("WhatsApp transicao: pedido=%s envio_solicitado=False resultado=status_inalterado", pedido.id)
+        return
+    try:
+        resultado = db.session.execute(
+            update(Pedido).where(Pedido.id == pedido.id, Pedido.status == anterior)
+            .values(status=novo_status).execution_options(synchronize_session=False)
+        )
+        if resultado.rowcount == 1:
+            historico = HistoricoStatusPedido(
+                pedido_id=pedido.id, status_anterior=anterior,
+                novo_status=novo_status, usuario_id=usuario_id)
+            db.session.add(historico)
+            if novo_status == "Finalizado":
+                tentativa = NotificacaoWhatsApp(
+                    historico_status=historico, pedido_id=pedido.id,
+                    cliente_id=pedido.cliente_id, evento="pedido_finalizado")
+                db.session.add(tentativa)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+    if resultado.rowcount == 1 and novo_status == "Finalizado":
+        db.session.refresh(pedido)
+        notificacao = notificar_pedido_finalizado(pedido)
+        registrar_resultado_notificacao(tentativa, notificacao)
+        return notificacao
+    current_app.logger.info("WhatsApp transicao: pedido=%s envio_solicitado=False resultado=sem_transicao_para_finalizado", pedido.id)
+
+
+def registrar_resultado_notificacao(tentativa, resultado):
+    """Atualiza a tentativa existente sem armazenar textos ou dados do destinatario."""
+    import re
+    from flask import current_app
+    from database.db import db
+
+    permitidos = {"aceito", "falha", "desabilitado", "bloqueado_testing",
+                  "sem_destinatario", "configuracao_invalida", "status_incompativel"}
+    status = getattr(resultado, "status", None)
+    sid = getattr(resultado, "sid", None)
+    codigo = getattr(resultado, "codigo_erro", None)
+    try:
+        tentativa.resultado = status if isinstance(status, str) and status in permitidos else "indeterminado"
+        tentativa.message_sid = sid if isinstance(sid, str) and len(sid) <= 34 else None
+        tentativa.codigo_erro = codigo if type(codigo) is int and 0 < codigo < 1000000 else None
+        db.session.commit()
+    except Exception:
+        # O commit da finalizacao ja ocorreu. A tentativa continua pendente;
+        # nao reenviar, nem propagar detalhes da falha de persistencia.
+        db.session.rollback()
+        current_app.logger.warning("WhatsApp: resultado da tentativa nao persistido")
