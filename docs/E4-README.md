@@ -8,7 +8,7 @@ Sistema web desenvolvido para centralizar a gestão de pedidos, clientes e contr
 ## Stack
 - Frontend: HTML5, CSS3, JavaScript
 - Backend: Python 3.10+ (Flask, Flask-SQLAlchemy)
-- Banco de dados: SQLite 3 / PostgreSQL (SQLAlchemy ORM)
+- Banco de dados: SQLite 3 (SQLAlchemy ORM)
 
 ## Como rodar localmente
 ### Pré-requisitos
@@ -37,13 +37,16 @@ Sistema web desenvolvido para centralizar a gestão de pedidos, clientes e contr
    ```bash
    pip install -r requirements.txt
    ```
-4. Configure as variáveis de ambiente (copie `.env.example` para `.env` e preencha):
-   | Variável | Descrição |
-   |---|---|
-   | `FLASK_APP` | Ponto de entrada da aplicação (`app.py`) |
-   | `FLASK_ENV` | Ambiente de execução (`development` ou `production`) |
-   | `SECRET_KEY` | Chave secreta de sessão Flask |
-   | `DATABASE_URL` | URI de conexão do banco de dados |
+4. Configure as variáveis de ambiente (opcional em desenvolvimento; copie `.env.example` para `.env` se desejar customizar):
+   ```bash
+   cp .env.example .env
+   ```
+   | Variável | Descrição | Valor padrão |
+   |---|---|---|
+   | `FLASK_APP` | Ponto de entrada da aplicação (`app.py`) | `app.py` |
+   | `FLASK_ENV` | Ambiente de execução (`development` ou `production`) | `development` |
+   | `SECRET_KEY` | Chave secreta de sessão Flask | `dev` |
+   | `DATABASE_URL` | URI de conexão do banco de dados | `sqlite:///database.db` |
 5. Crie o banco e rode o schema:
    As tabelas e migrações são verificadas e criadas automaticamente na inicialização da aplicação (`app.py`). O schema DDL de referência está disponível em `database/schema.sql`.
 6. Crie os usuários padrão do sistema:
@@ -78,7 +81,8 @@ Sistema web desenvolvido para centralizar a gestão de pedidos, clientes e contr
 - Toda PR exige revisão de ao menos 1 integrante antes do merge.
 
 ## Testes
-Como rodar: `python -m unittest discover -s tests -p "test_*.py"`
+Como rodar: `python -m unittest discover -s tests -p "test_*.py"`  
+*(Certifique-se de que o ambiente virtual `.venv` esteja ativado)*
 
 ## Licença / Uso acadêmico
 Projeto desenvolvido para a disciplina de Laboratório de Engenharia de Software — ADS, Fatec Ribeirão Preto, 2026.

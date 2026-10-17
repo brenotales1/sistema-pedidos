@@ -43,6 +43,7 @@ class PedidosTestCase(unittest.TestCase):
                 db.session.add(cliente)
 
             db.session.commit()
+            self.cliente_id = cliente.id
 
         self.client.post("/login", data={"email": "func@sistema.com", "senha": "123456"})
 
@@ -51,6 +52,61 @@ class PedidosTestCase(unittest.TestCase):
         with self.app.app_context():
             db.session.remove()
             db.drop_all()
+
+    def dados_pedido(self, cliente_id):
+        return {"cliente_id": str(cliente_id), "categoria": "Lona",
+                "tipo": "Lona Branca Brilho", "largura": "1", "altura": "2",
+                "unidade": "m", "quantidade": "2"}
+
+    def test_cliente_invalido_nao_baixa_estoque(self):
+        for valor in ('invalido', '99999', ''):
+            response = self.client.post('/pedidos/novo', data=self.dados_pedido(valor))
+            self.assertIn('Selecione um cliente'.encode(), response.data)
+        with self.app.app_context():
+            self.assertEqual(Pedido.query.count(), 0)
+            self.assertEqual(Material.query.filter_by(codigo_barras='7890000000011').first().metros_disponiveis, 50)
+
+    def test_homonimos_selecionados_por_id_e_historico_preservado(self):
+        with self.app.app_context():
+            outro = Cliente(nome='Cliente Teste', telefone='11888888888')
+            db.session.add(outro)
+            db.session.commit()
+            outro_id = outro.id
+        response = self.client.post('/pedidos/novo', data=self.dados_pedido(outro_id))
+        self.assertEqual(response.status_code, 302)
+        with self.app.app_context():
+            pedido = Pedido.query.one()
+            pedido_id = pedido.id
+            self.assertEqual(pedido.cliente_id, outro_id)
+            pedido.cliente.nome = 'Nome atualizado'
+            db.session.commit()
+        response = self.client.get(f'/pedidos/{pedido_id}/editar')
+        self.assertIn(f'value="{outro_id}" selected'.encode(), response.data)
+        self.client.post(f'/pedidos/{pedido_id}/editar', data=self.dados_pedido(outro_id))
+        with self.app.app_context():
+            self.assertEqual(Pedido.query.one().cliente_nome, 'Cliente Teste')
+        self.client.post(f'/pedidos/{pedido_id}/editar', data=self.dados_pedido(self.cliente_id))
+        with self.app.app_context():
+            self.assertEqual(Pedido.query.one().cliente_id, self.cliente_id)
+
+    def test_legado_editavel_sem_associacao_e_vinculo_explicito(self):
+        self.client.post('/pedidos/novo', data=self.dados_pedido(self.cliente_id))
+        with self.app.app_context():
+            pedido = Pedido.query.one()
+            pedido.cliente_id = None
+            pedido.cliente_nome = 'Historico sem cadastro'
+            pedido_id = pedido.id
+            db.session.commit()
+        response = self.client.get(f'/pedidos/{pedido_id}/editar')
+        self.assertIn('Manter sem vínculo'.encode(), response.data)
+        self.client.post(f'/pedidos/{pedido_id}/editar', data=self.dados_pedido(''))
+        with self.app.app_context():
+            pedido = Pedido.query.one()
+            self.assertIsNone(pedido.cliente_id)
+            self.assertEqual(pedido.cliente_nome, 'Historico sem cadastro')
+        self.client.post(f'/pedidos/{pedido_id}/editar', data=self.dados_pedido(self.cliente_id))
+        with self.app.app_context():
+            self.assertEqual(Pedido.query.one().cliente_id, self.cliente_id)
 
     def test_conversao_medidas(self):
         """Testa conversao de centimetros e metros para metros com precisao."""
@@ -81,7 +137,7 @@ class PedidosTestCase(unittest.TestCase):
         response = self.client.post(
             "/pedidos/novo",
             data={
-                "cliente": "Cliente Teste",
+                "cliente_id": str(self.cliente_id),
                 "categoria": "Lona",
                 "tipo": "Lona Branca Brilho",
                 "largura": "1.00",
@@ -98,6 +154,8 @@ class PedidosTestCase(unittest.TestCase):
             self.assertIsNotNone(pedido)
             self.assertEqual(pedido.metros_consumidos, 2.00)
             self.assertEqual(pedido.status, "Pagamento pendente")
+            self.assertEqual(pedido.cliente_id, self.cliente_id)
+            self.assertEqual(pedido.cliente.id, self.cliente_id)
 
             # Verifica estoque restante (50 - 2 = 48)
             mat = Material.query.filter_by(codigo_barras="7890000000011").first()
@@ -109,7 +167,7 @@ class PedidosTestCase(unittest.TestCase):
         self.client.post(
             "/pedidos/novo",
             data={
-                "cliente": "Cliente Teste",
+                "cliente_id": str(self.cliente_id),
                 "categoria": "Lona",
                 "tipo": "Lona Branca Brilho",
                 "largura": "1.00",
@@ -139,6 +197,7 @@ class PedidosTestCase(unittest.TestCase):
         """Atualizacao de status do pedido reflete no banco."""
         with self.app.app_context():
             pedido = Pedido(
+                cliente_id=self.cliente_id,
                 cliente_nome="Cliente Teste",
                 categoria="Lona",
                 material_nome="Lona Branca Brilho",

@@ -95,3 +95,9 @@ Com o ambiente virtual ativado: `python -B -m unittest discover -s tests -q`.
 No PowerShell, também é possível usar `.\.venv\Scripts\python.exe -B -m unittest discover -s tests -q`.
 
 Os novos testes usam SQLite em memória, substituindo a referência histórica a database_test.db no CT41. Não dependem de Twilio, credenciais reais ou internet. Aceito significa resposta simulada da API, sem confirmação de entrega. O wamid é normalizado pelo conector atual antes da persistência. Evidência integral em [Sprint 3](sprints/sprint-3-evidencias-teste.md).
+
+### Caso futuro preservado da main
+
+| ID | Historia | Cenario | Resultado esperado | Situacao |
+|---|---|---|---|---|
+| CT46 | #10 | Consulta administrativa do historico de notificacoes | Lista pedido, cliente, data e resultado | Planejado para Sprint 4; nao executado nesta entrega |

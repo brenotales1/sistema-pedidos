@@ -10,10 +10,13 @@ COLUNA_CODIGO_BARRAS = "codigo_barras"
 
 def aplicar_migracoes():
     """Executa todas as migracoes pendentes do banco local."""
+    migrar_cliente_id_pedido()
     renomear_tabela_bobinas()
     renomear_coluna_largura_bobina()
     garantir_coluna_empresa_cliente()
     garantir_coluna_codigo_barras_material()
+    garantir_tabela_historico_status_pedido()
+    garantir_tabela_notificacao_whatsapp()
     db.session.commit()
 
 
@@ -111,3 +114,59 @@ def executar_sql(sql):
 def identificador(nome):
     """Escapa um identificador SQL para uso em comandos de migracao."""
     return '"' + nome.replace('"', '""') + '"'
+
+
+def migrar_cliente_id_pedido():
+    """Migra o vinculo uma unica vez, com DDL e dados na mesma transacao."""
+    with db.engine.connect() as conexao:
+        # BEGIN explicito inclui o ALTER TABLE na transacao SQLite e serializa migracoes.
+        conexao.exec_driver_sql("BEGIN IMMEDIATE")
+        try:
+            tabelas = inspect(conexao).get_table_names()
+            if "pedido" not in tabelas or "cliente" not in tabelas:
+                conexao.rollback()
+                return
+            conexao.exec_driver_sql(
+                "CREATE TABLE IF NOT EXISTS schema_migration "
+                "(nome VARCHAR(120) PRIMARY KEY)"
+            )
+            nome = "pedido_cliente_id_v1"
+            aplicada = conexao.execute(text(
+                "SELECT 1 FROM schema_migration WHERE nome = :nome"
+            ), {"nome": nome}).scalar()
+            if aplicada:
+                conexao.rollback()
+                return
+            if "cliente_id" not in {c["name"] for c in inspect(conexao).get_columns("pedido")}:
+                conexao.exec_driver_sql(
+                    "ALTER TABLE pedido ADD COLUMN cliente_id INTEGER REFERENCES cliente(id)"
+                )
+            conexao.exec_driver_sql("""
+                UPDATE pedido SET cliente_id = (
+                    SELECT MIN(c.id) FROM cliente c
+                    WHERE c.nome COLLATE BINARY = pedido.cliente_nome COLLATE BINARY
+                )
+                WHERE cliente_id IS NULL AND (
+                    SELECT COUNT(*) FROM cliente c
+                    WHERE c.nome COLLATE BINARY = pedido.cliente_nome COLLATE BINARY
+                ) = 1
+            """)
+            conexao.execute(text(
+                "INSERT INTO schema_migration (nome) VALUES (:nome)"
+            ), {"nome": nome})
+            conexao.commit()
+        except Exception:
+            conexao.rollback()
+            raise
+
+
+def garantir_tabela_historico_status_pedido():
+    """Adiciona apenas a tabela de auditoria, preservando os registros existentes."""
+    from models.historico_status_pedido import HistoricoStatusPedido
+    HistoricoStatusPedido.__table__.create(bind=db.engine, checkfirst=True)
+
+
+def garantir_tabela_notificacao_whatsapp():
+    """Cria apenas a nova tabela; reexecucoes preservam dados existentes."""
+    from models.notificacao_whatsapp import NotificacaoWhatsApp
+    NotificacaoWhatsApp.__table__.create(bind=db.engine, checkfirst=True)

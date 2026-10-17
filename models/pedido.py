@@ -11,6 +11,8 @@ class Pedido(db.Model):
     __tablename__ = "pedido"
 
     id = db.Column(db.Integer, primary_key=True)
+    cliente_id = db.Column(db.Integer, db.ForeignKey("cliente.id"), nullable=True)
+    cliente = db.relationship("Cliente")
     cliente_nome = db.Column(db.String(120), nullable=False)
     categoria = db.Column(db.String(50), nullable=False)
     material_nome = db.Column(db.String(120), nullable=False)

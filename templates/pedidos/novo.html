@@ -26,10 +26,10 @@
 <label>Cliente</label>
 
 <div class="cliente-row">
-<select id="pedido-cliente" name="cliente" required>
-<option value="">Selecionar</option>
+<select id="pedido-cliente" name="cliente_id" {% if not pedido or pedido.cliente_id %}required{% endif %}>
+<option value="">{% if pedido and not pedido.cliente_id %}Manter sem vínculo — {{ pedido.cliente_nome }}{% else %}Selecionar{% endif %}</option>
 {% for cliente in clientes %}
-<option value="{{ cliente }}" {% if form_data.cliente == cliente %}selected{% endif %}>{{ cliente }}</option>
+<option value="{{ cliente.id }}" {% if form_data.cliente_id == cliente.id|string %}selected{% endif %}>{{ cliente.nome }} — #{{ cliente.id }}{% if cliente.empresa %} — {{ cliente.empresa }}{% endif %}</option>
 {% endfor %}
 </select>
 
@@ -409,16 +409,16 @@ salvarClienteButton.addEventListener("click", async function () {
         }
 
         const cliente = await response.json();
-        let clienteOption = Array.from(clienteSelect.options).find((option) => option.value === cliente.nome);
+        let clienteOption = Array.from(clienteSelect.options).find((option) => option.value === String(cliente.id));
 
         if (!clienteOption) {
             clienteOption = document.createElement("option");
-            clienteOption.value = cliente.nome;
-            clienteOption.textContent = cliente.nome;
+            clienteOption.value = String(cliente.id);
+            clienteOption.textContent = `${cliente.nome} — #${cliente.id}`;
             clienteSelect.appendChild(clienteOption);
         }
 
-        clienteSelect.value = cliente.nome;
+        clienteSelect.value = String(cliente.id);
         nomeClienteInput.value = "";
         telefoneClienteInput.value = "";
         empresaClienteInput.value = "";
