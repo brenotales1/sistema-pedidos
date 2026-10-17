@@ -20,7 +20,7 @@ Nenhum PR é aceito na `main` ou `develop` se: (a) algum teste automatizado exis
 
 ---
 
-## 3. Casos de teste planejados (41 testes automatizados)
+## 3. Casos de teste e rastreabilidade
 
 | ID | História (E2) | Cenário | Entrada | Resultado esperado | Prioridade |
 |:---:|:---:|---|---|---|:---:|
@@ -65,3 +65,33 @@ Nenhum PR é aceito na `main` ou `develop` se: (a) algum teste automatizado exis
 | **CT39** | — | Cancelamento de pedido estorna metragem ao estoque do material | Exclusão/cancelamento de pedido existente | Metragem é creditada de volta ao saldo do material | **Alta** |
 | **CT40** | — | Atualização de status de pedido no fluxo de produção | Transição de status (ex.: 'Pendente' -> 'Em Produção' -> 'Concluído') | Novo status é persistido no banco de dados | **Média** |
 | **CT41** | — | Isolamento de banco de dados nos testes automatizados | Execução do setup de testes com `database_test.db` isolado | Testes rodam sem concorrência ou conflito com o banco de dev | **Alta** |
+
+
+## 4. Casos formais da Sprint 3 (E7)
+
+Os IDs CT01–CT41 acima permanecem históricos. CT08/CT09 citados para notificações na retrospectiva da Sprint 2 correspondem a CT42/CT43 abaixo, evitando conflito com os casos de autenticação.
+
+Pré-condições: usuário autenticado, cliente vinculado por ID, pedido não finalizado, SQLite em memória e ambiente Meta fictício. `requests.post` é mockado, com bloqueio adicional em socket e Session.request. Cada teste recria os dados.
+
+| ID / história | Procedimento e entradas | Resultado esperado | Resultado |
+|---|---|---|---|
+| CT42 / #8 (CT08 notificações) | Finalizar com telefone válido; API mockada HTTP 200 e 201 com wamid; exercitar texto e template | Payload inclui destinatário correto e pedido; status aceito persistido e flash de sucesso | Aprovado |
+| CT43 / #9 (CT09 notificações) | Percorrer status, repetir Finalizado, reabrir/finalizar e usar clientes homônimos | Só transição efetiva dispara; cliente pelo ID; tentativa única por histórico com data UTC e resultado | Aprovado |
+| CT44 / #8 | Simular HTTP 400/500, timeout, conexão; telefone ausente/inválido e credenciais ausentes | Falha não desfaz pedido; resultado falha e flash de erro; telefone inválido impede HTTP e avisa usuário | Aprovado |
+| CT45 / #9 | Ativar TESTING mesmo com credenciais; verificar webhook GET válido/inválido e POST; simular falha de gravação do resultado | Nenhum envio real; bloqueado_testing persistido; webhook 200/403; finalização preservada e tentativa pendente em falha de gravação | Aprovado |
+
+### Rastreabilidade
+
+| Arquivo | Métodos representativos |
+|---|---|
+| `tests/test_whatsapp.py` | `test_http_200_e_201_com_wamid`, `test_template_com_parametros_do_pedido`, `test_http_400_e_500`, `test_erro_de_rede_e_json_invalido`, `test_testing_bloqueia_mesmo_com_credenciais` |
+| `tests/test_notificacao_visual.py` | `test_aceito_texto_meta`, `test_erro_http_exibe_flash`, `test_sem_telefone`, `test_telefone_invalido`, `test_testing_feedback_sem_sdk` |
+| `tests/test_notificacao_persistencia.py` | `test_http_201_persiste_aceito`, `test_http_500_persiste_falha`, `test_ct43_us09_destinatario_por_id_entre_homonimos`, `test_repeticao_outros_status_e_nova_transicao`, `test_commit_da_transicao_antes_do_envio`, `test_webhook_verificacao_e_recebimento` |
+| `tests/test_status_pedido.py` | Auditoria e atomicidade da US #7 |
+
+### Execução e limites
+
+Com o ambiente virtual ativado: `python -B -m unittest discover -s tests -q`.
+No PowerShell, também é possível usar `.\.venv\Scripts\python.exe -B -m unittest discover -s tests -q`.
+
+Os novos testes usam SQLite em memória, substituindo a referência histórica a database_test.db no CT41. Não dependem de Twilio, credenciais reais ou internet. Aceito significa resposta simulada da API, sem confirmação de entrega. O wamid é normalizado pelo conector atual antes da persistência. Evidência integral em [Sprint 3](sprints/sprint-3-evidencias-teste.md).
