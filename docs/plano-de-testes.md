@@ -12,7 +12,7 @@
 | **Integração** | Rotas da aplicação, permissões de usuário e banco de testes | Flask Test Client + `unittest` | A cada PR |
 | **Manual / Aceitação** | Fluxos completos na interface (incluindo o leitor de código de barras) | Roteiro manual | Ao fim de cada sprint |
 
-*Observação sobre o WhatsApp:* Nos testes automatizados, vamos simular o envio das mensagens usando mocks (`unittest.mock`), sem disparar mensagens reais para não gastar créditos de API e nem colocar números de telefone reais nos testes.
+*Observação sobre o WhatsApp:* Nos testes automatizados, simulamos o envio das mensagens usando mocks (`unittest.mock`), sem disparar mensagens reais para não gastar créditos de API e nem colocar números de telefone reais nos testes.
 
 ---
 
@@ -72,14 +72,14 @@ Nenhum PR deve ser aceito na `main` ou `develop` se: (a) algum teste automatizad
 
 ---
 
-### 3.2. Casos planejados para o WhatsApp (Sprint 3 e 4)
+### 3.2. Notificações — CT42 a CT45 executados na Sprint 3; CT46 planejado para Sprint 4
 
 | ID | História (E2) | Cenário | Entrada | Resultado esperado | Prioridade |
 |:---:|:---:|---|---|---|:---:|
-| **CT42** | #7, #8 | Envio de notificação no WhatsApp com sucesso | Pedido atualizado e telefone válido do cliente | Pedido é salvo e envio da mensagem é confirmado (simulado com mock) | **Alta** |
+| **CT42** | #7, #8 | Envio de notificação no WhatsApp com sucesso | Pedido atualizado e telefone válido do cliente | Pedido finalizado; HTTP 200/201 com wamid simulado retorna aceito; flash de sucesso; entrega_confirmada permanece falsa | **Alta** |
 | **CT43** | #8, #9 | Falha ou erro no envio do WhatsApp | Serviço de envio simulando erro (timeout ou API fora) | Sistema avisa que houve erro no envio e não grava como enviado | **Alta** |
 | **CT44** | #7, #8 | Cliente com telefone inválido ou sem número | Pedido com cliente sem telefone ou formato incorreto | Sistema barra o envio e avisa que o telefone precisa ser corrigido | **Alta** |
-| **CT45** | #9 | Envio automático quando o pedido muda de status | Pedido alterado para 'Pronto para retirada' | Sistema dispara a notificação sozinho e registra no histórico | **Alta** |
+| **CT45** | #9 | Envio automático quando o pedido muda de status | Pedido alterado para 'Finalizado' | Sistema dispara automaticamente e registra tentativa vinculada ao histórico; repetir status não reenvia | **Alta** |
 | **CT46** | #10 | Consulta do histórico de mensagens enviadas | Administrador acessando a tela de histórico | Lista as notificações enviadas com pedido, cliente, data e status | **Média** |
 
 ---
@@ -104,3 +104,30 @@ A cada entrega de sprint, salvamos os resultados dos testes e prints nas pastas:
 - **#7 e #8 (Envio manual de WhatsApp):** CT42, CT43, CT44
 - **#9 (Envio automático de WhatsApp):** CT43, CT45
 - **#10 (Histórico de notificações):** CT46
+
+## 6. Execução formal — Sprint 3 (E7)
+
+**Data de consolidação:** 18/10/2026. **Resultado:** 68 testes aprovados, incluindo 21 novos testes de notificações. Cada método conta como um teste; subcenários usam subTest.
+
+Os rótulos CT08/CT09 de notificações citados no planejamento da retrospectiva da Sprint 2 correspondem aqui a CT42–CT45. CT08 e CT09 da tabela histórica continuam designando autenticação.
+
+**Pré-condições comuns:** cliente e usuário fictícios, sessão autenticada, SQLite em memória e variáveis Meta fictícias. Para caminhos de envio, TESTING=False apenas após instalar o mock de requests.post e a barreira na sessão HTTP. Para testar a proteção nativa, TESTING=True e WHATSAPP_ENABLED=True.
+
+| ID | Procedimento automatizado | Verificações | Execução/evidência |
+|---|---|---|---|
+| CT42 (#7, #8) | Finalizar pedido; simular resposta Meta 200/201 com messages[0].id | Payload contém cliente/pedido ou parâmetros de template; destino normalizado; timeout; resultado aceito; flash sucesso; tentativa persistida sem entrega confirmada | Aprovado — test_whatsapp.py, test_notificacao_visual.py, test_notificacao_persistencia.py |
+| CT43 (#8, #9) | Simular HTTP 400/500, Timeout, ConnectionError e JSON inválido | Resultado falha; código HTTP quando disponível; flash erro; pedido continua Finalizado; sem identificador de sucesso | Aprovado — três módulos de notificação |
+| CT44 (#7, #8) | Usar telefone inválido, vazio ou None; testar também pedido sem cliente no serviço | Não chama requests.post; sem_destinatario; flash orienta corrigir telefone; pedido permanece finalizado quando possui cliente vinculado | Aprovado — test_whatsapp.py e test_notificacao_visual.py |
+| CT45 (#9) | Finalizar, repetir status, alterar outro status, reabrir e finalizar novamente | Uma tentativa por transição; histórico com usuário; outros status não enviam; nova finalização cria nova tentativa | Aprovado — test_notificacao_persistencia.py |
+| Proteção de testes (#8, #9) | Finalizar com TESTING=True, serviço habilitado e credenciais fictícias preenchidas | bloqueado_testing no serviço/banco/flash; nenhuma chamada HTTP | Aprovado — três módulos de notificação |
+
+**Casos complementares:** conector desabilitado, credenciais ausentes, status incompatível, templates com parâmetros e hello_world, normalização de telefone e contrato básico GET/POST do webhook. O recebimento do webhook não comprova entrega.
+
+**Reprodução no PowerShell:**
+
+```powershell
+$env:Path = "$PWD\.venv\Scripts;$env:Path"
+python -B -m unittest discover -s tests -q
+```
+
+[Evidências com log integral e limitações](sprints/sprint-3-evidencias-teste.md). CT46 continua planejado; não integra os casos aprovados desta sprint.
