@@ -283,7 +283,8 @@ def atualizar_status_pedido(id):
         resultado = atualizar_status_com_notificacao(pedido, status, usuario_id=session.get("usuario_id"))
         if resultado is not None:
             mensagens = {
-                "aceito": ("Pedido finalizado. Notificação do WhatsApp disparada com sucesso!", "sucesso"),
+                "registro_pendente": ("Pedido finalizado. O resultado da notificacao nao foi salvo; confira o historico antes de tentar outro envio.", "erro"),
+                "aceito": ("Pedido finalizado. Notificação do WhatsApp disparada com sucesso! Aceita pela API; entrega ainda não confirmada.", "sucesso"),
                 "desabilitado": ("Pedido finalizado. O envio de notificações pelo WhatsApp está desativado.", "info"),
                 "bloqueado_testing": ("Pedido finalizado. Notificação bloqueada no ambiente de testes.", "info"),
                 "sem_destinatario": ("Pedido finalizado. Notificação não enviada: verifique o telefone cadastrado do cliente.", "erro"),

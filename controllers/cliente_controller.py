@@ -12,9 +12,9 @@ cliente_bp = Blueprint("cliente", __name__)
 def extrair_form_data_cliente(fonte):
     """Extrai e limpa os campos de cliente enviados pela interface."""
     return {
-        "nome": fonte.get("nome", "").strip(),
-        "telefone": fonte.get("telefone", "").strip(),
-        "empresa": fonte.get("empresa", "").strip(),
+        "nome": str(fonte.get("nome") or "").strip(),
+        "telefone": str(fonte.get("telefone") or "").strip(),
+        "empresa": str(fonte.get("empresa") or "").strip(),
     }
 
 
@@ -29,6 +29,10 @@ def validar_cliente(form_data):
     """Valida os campos obrigatorios do cadastro de cliente."""
     if not form_data["nome"]:
         return "Informe o nome do cliente."
+
+    for campo, limite in (("nome", 120), ("telefone", 20), ("empresa", 120)):
+        if len(form_data[campo]) > limite:
+            return f"O campo {campo} deve ter no maximo {limite} caracteres."
 
     return ""
 
@@ -93,6 +97,11 @@ def editar_cliente(id):
 def criar_cliente_rapido():
     """Cria um cliente por requisicao JSON a partir do formulario de pedido."""
     dados = request.get_json(silent=True) or {}
+    if not isinstance(dados, dict) or any(
+        valor is not None and not isinstance(valor, str)
+        for valor in (dados.get("nome"), dados.get("telefone"), dados.get("empresa"))
+    ):
+        return jsonify({"erro": "Informe nome, telefone e empresa como texto."}), 400
     form_data = extrair_form_data_cliente(dados)
     erro = validar_cliente(form_data)
 

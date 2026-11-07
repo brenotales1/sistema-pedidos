@@ -10,6 +10,7 @@ from controllers.cliente_controller import cliente_bp
 from controllers.estoque_controller import estoque_bp
 from controllers.pedido_controller import pedido_bp
 from controllers.auth_controller import auth_bp
+from controllers.notificacao_controller import notificacao_bp
 
 from services.database_migration_service import aplicar_migracoes
 from services.material_service import seed_materials
@@ -70,7 +71,7 @@ def create_app(test_config=None):
 
         if request.method == "POST":
             payload = request.get_json(silent=True)
-            app.logger.info("Webhook Meta evento recebido: %s", payload)
+            app.logger.info("Webhook Meta evento recebido")
             return "EVENT_RECEIVED", 200
 
     with app.app_context():
@@ -86,6 +87,7 @@ def registrar_rotas(app):
     app.register_blueprint(estoque_bp)
     app.register_blueprint(cliente_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(notificacao_bp)
     app.add_url_rule("/", "home", home)
 
 

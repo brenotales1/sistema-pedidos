@@ -1,5 +1,7 @@
 """Rotas e operacoes de interface para estoque."""
 
+from math import isfinite
+
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
 
 from database.db import db
@@ -142,6 +144,7 @@ def novo_estoque():
             not categoria
             or not nome
             or not codigo_barras
+            or not isfinite(largura_m)
             or largura_m <= 0
             or unidades <= 0
         ):
@@ -223,7 +226,12 @@ def editar_metros(material_id):
     try:
         metros_disponiveis = float(metros_texto)
     except ValueError:
-        metros_disponiveis = material.metros_disponiveis
+        flash("Informe uma metragem valida.", "erro")
+        return redirect(url_for("estoque.lista_estoque"))
+
+    if not isfinite(metros_disponiveis) or metros_disponiveis < 0:
+        flash("Informe uma metragem finita maior ou igual a zero.", "erro")
+        return redirect(url_for("estoque.lista_estoque"))
 
     capacidade_total = material.quantidade_bobinas * METROS_POR_BOBINA
     if metros_disponiveis > capacidade_total:

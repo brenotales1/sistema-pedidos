@@ -111,21 +111,26 @@ def notificar_pedido_finalizado(pedido):
             }
 
         solicitado = True
-        current_app.logger.info("WhatsApp Meta solicitacao: pedido=%s destino=%s", pedido.id, numero_limpo)
+        current_app.logger.info("WhatsApp Meta solicitacao: pedido=%s", pedido.id)
         resp = requests.post(url_meta, json=payload_meta, headers=headers_meta, timeout=10)
 
         if resp.status_code in (200, 201):
             dados = resp.json()
-            msg_id = None
-            if "messages" in dados and len(dados["messages"]) > 0:
-                msg_id = dados["messages"][0].get("id")
-            current_app.logger.info("WhatsApp aceito pela Meta: pedido=%s msg_id=%s", pedido.id, msg_id)
+            mensagens = dados.get("messages") if isinstance(dados, dict) else None
+            primeira = mensagens[0] if isinstance(mensagens, list) and mensagens else None
+            msg_id = primeira.get("id") if isinstance(primeira, dict) else None
+            if (not isinstance(msg_id, str) or not msg_id.startswith("wamid.")
+                    or not re.fullmatch(r"wamid\.[A-Za-z0-9_+/=.-]+", msg_id)
+                    or "error" in dados):
+                current_app.logger.warning("WhatsApp: resposta sem identificador valido, pedido=%s", pedido.id)
+                return concluir("falha")
+            current_app.logger.info("WhatsApp aceito pela Meta: pedido=%s", pedido.id)
             # Normaliza o identificador gerado pela Meta (wamid.XXX)
             sid_limpo = re.sub(r"[^0-9a-zA-Z]", "", msg_id or "") if msg_id else ""
             sid_formatado = sid_limpo[:34] if sid_limpo else None
             return concluir("aceito", sid=sid_formatado)
         else:
-            current_app.logger.warning("Falha WhatsApp Meta: pedido=%s status_http=%s resposta=%s", pedido.id, resp.status_code, resp.text)
+            current_app.logger.warning("Falha WhatsApp Meta: pedido=%s status_http=%s", pedido.id, resp.status_code)
             return concluir("falha", codigo_erro=resp.status_code)
 
     except Exception:

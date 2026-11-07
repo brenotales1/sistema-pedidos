@@ -257,6 +257,12 @@ const inputCodigo = document.getElementById("input-codigo-barras");
 const btnIdentificar = document.getElementById("btn-identificar");
 const resultadoCodigo = document.getElementById("resultado-codigo-barras");
 
+function escaparTexto(valor) {
+    const elemento = document.createElement("span");
+    elemento.textContent = String(valor == null ? "" : valor);
+    return elemento.innerHTML;
+}
+
 function identificarMaterial() {
     const codigo = inputCodigo.value.trim();
     if (!codigo) {
@@ -278,20 +284,23 @@ function identificarMaterial() {
                 resultadoCodigo.innerHTML =
                     '<div class="resultado-card resultado-erro">' +
                     '<p><strong>Material não encontrado</strong></p>' +
-                    '<p>Nenhum material cadastrado com o código <code>' + codigo + '</code>.</p>' +
+                    '<p>Nenhum material cadastrado com o código <code>' + escaparTexto(codigo) + '</code>.</p>' +
                     '</div>';
-            } else {
+            } else if (result.status === 200) {
                 var m = result.data;
                 resultadoCodigo.innerHTML =
                     '<div class="resultado-card resultado-sucesso">' +
-                    '<h4>' + m.nome + '</h4>' +
+                    '<h4>' + escaparTexto(m.nome) + '</h4>' +
                     '<table class="resultado-tabela">' +
-                    '<tr><td><strong>Categoria</strong></td><td>' + m.categoria + '</td></tr>' +
-                    '<tr><td><strong>Código de barras</strong></td><td>' + m.codigo_barras + '</td></tr>' +
-                    '<tr><td><strong>Largura</strong></td><td>' + m.largura + '</td></tr>' +
-                    '<tr><td><strong>Metros disponíveis</strong></td><td>' + m.metros_disponiveis + '</td></tr>' +
+                    '<tr><td><strong>Categoria</strong></td><td>' + escaparTexto(m.categoria) + '</td></tr>' +
+                    '<tr><td><strong>Código de barras</strong></td><td>' + escaparTexto(m.codigo_barras) + '</td></tr>' +
+                    '<tr><td><strong>Largura</strong></td><td>' + escaparTexto(m.largura) + '</td></tr>' +
+                    '<tr><td><strong>Metros disponíveis</strong></td><td>' + escaparTexto(m.metros_disponiveis) + '</td></tr>' +
                     '</table>' +
                     '</div>';
+            }
+            if (result.status !== 200 && result.status !== 404) {
+                throw new Error("Falha na consulta");
             }
             inputCodigo.value = "";
             inputCodigo.focus();
@@ -312,6 +321,16 @@ inputCodigo.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
         event.preventDefault();
         identificarMaterial();
+    }
+});
+// O Enter enviado pelo leitor permite conferir a quantidade antes da entrada.
+const inputEntradaCodigo = document.getElementById("input-entrada-codigo");
+inputEntradaCodigo.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        const quantidade = inputEntradaCodigo.form.elements.quantidade_bobinas;
+        quantidade.focus();
+        quantidade.select();
     }
 });
 </script>

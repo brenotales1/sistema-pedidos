@@ -1,6 +1,7 @@
 """Funcoes de apoio para calculos e formatacoes de pedidos."""
 
 import unicodedata
+from math import isfinite
 
 
 def normalizar_busca(valor):
@@ -14,6 +15,10 @@ def normalizar_busca(valor):
 def converter_para_metros(valor_texto, unidade):
     """Converte um valor informado em metros ou centimetros para metros."""
     valor = float(str(valor_texto).replace(",", "."))
+    if not isfinite(valor):
+        raise ValueError("Informe uma medida finita.")
+    if unidade not in {"m", "cm"}:
+        raise ValueError("Unidade de medida invalida.")
     if unidade == "cm":
         return round(valor / 100, 2)
     return round(valor, 2)
@@ -157,14 +162,15 @@ def atualizar_status_com_notificacao(pedido, novo_status, usuario_id=None):
     if resultado.rowcount == 1 and novo_status == "Finalizado":
         db.session.refresh(pedido)
         notificacao = notificar_pedido_finalizado(pedido)
-        registrar_resultado_notificacao(tentativa, notificacao)
+        if not registrar_resultado_notificacao(tentativa, notificacao):
+            from services.whatsapp_service import ResultadoEnvio
+            return ResultadoEnvio("registro_pendente")
         return notificacao
     current_app.logger.info("WhatsApp transicao: pedido=%s envio_solicitado=False resultado=sem_transicao_para_finalizado", pedido.id)
 
 
 def registrar_resultado_notificacao(tentativa, resultado):
     """Atualiza a tentativa existente sem armazenar textos ou dados do destinatario."""
-    import re
     from flask import current_app
     from database.db import db
 
@@ -178,8 +184,10 @@ def registrar_resultado_notificacao(tentativa, resultado):
         tentativa.message_sid = sid if isinstance(sid, str) and len(sid) <= 34 else None
         tentativa.codigo_erro = codigo if type(codigo) is int and 0 < codigo < 1000000 else None
         db.session.commit()
+        return True
     except Exception:
         # O commit da finalizacao ja ocorreu. A tentativa continua pendente;
         # nao reenviar, nem propagar detalhes da falha de persistencia.
         db.session.rollback()
         current_app.logger.warning("WhatsApp: resultado da tentativa nao persistido")
+        return False

@@ -30,6 +30,9 @@
 <a href="/estoque">Estoque</a>
 <a href="/estoque/movimentacoes">Movimentações</a>
 <a href="/clientes">Clientes</a>
+{% if session.get('usuario_id') and session.get('usuario_perfil') == 'admin' %}
+<a href="{{ url_for('notificacao.historico') }}">Notificações</a>
+{% endif %}
 </div>
 
 <div class="container">
