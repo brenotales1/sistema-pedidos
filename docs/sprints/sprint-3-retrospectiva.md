@@ -41,11 +41,10 @@ A Sprint 4 será a última etapa do projeto, tendo como principal objetivo final
 | Ação | Responsável |
 |---|---|
 | Implementar consulta administrativa do histórico de notificações (US #10 / CT46), conforme prioridade do backlog. | Breno Tales e Daniel Fredi |
-| Revisar a integração com a Meta Cloud API, corrigindo possíveis falhas no envio e no registro das notificações. | Breno Tales|
 | Validar a identificação de materiais e a entrada de estoque por código de barras, utilizando inicialmente a digitação manual e, caso disponível, um leitor físico USB HID. | Daniel Fredi |
 | Corrigir possíveis erros e realizar os ajustes finais nas funcionalidades de pedidos, clientes e estoque. | Breno Tales e Daniel Fredi|
-| Executar os testes automatizados e registrar as evidências de funcionamento do sistema. | Daniel Fredi|
+| Executar os testes automatizados e registrar as evidências de funcionamento do sistema. | Breno Tales|
 | Revisar os requisitos obrigatórios (Must Have) e verificar o atendimento aos critérios de aceite do MVP. | Breno Tales e Daniel Fredi |
-| Atualizar a documentação técnica, os relatórios e as evidências da Sprint 4. | Daniel Fredi |
+| Atualizar a documentação técnica, os relatórios e as evidências da Sprint 4. | Breno Tales |
 | Preparar a apresentação e a demonstração do sistema para a avaliação final. | Breno Tales e Daniel Fredi  |
 

@@ -37,9 +37,10 @@
         aria-label="Buscar material ou código de barras"
     >
 
+    <label><input type="checkbox" name="abaixo_minimo" value="1" {% if abaixo_minimo %}checked{% endif %}> Apenas abaixo do mínimo</label>
     <button class="btn" type="submit">Buscar</button>
 
-    {% if busca %}
+    {% if busca or abaixo_minimo %}
         <a class="btn-cancelar-form" href="{{ url_for('estoque.lista_estoque') }}">
             Limpar
         </a>
@@ -114,6 +115,8 @@
 <th>Largura</th>
 <th>Bobinas</th>
 <th>Metros restantes</th>
+<th>Estoque mínimo</th>
+<th>Situação</th>
 {% if session.get('usuario_perfil') == 'admin' %}
 <th>Ações</th>
 {% endif %}
@@ -121,12 +124,26 @@
 </thead>
 <tbody>
 {% for item in secao.itens %}
-<tr>
+<tr{% if item.abaixo_minimo %} class="estoque-abaixo-minimo"{% endif %}>
 <td>{{ item.nome }}</td>
-<td>{{ item.codigo_barras }}</td>
+<td>
+{% if item.codigo_barras %}{{ item.codigo_barras }}{% else %}<strong class="alerta-estoque-minimo">Código não cadastrado</strong>{% endif %}
+{% if session.get('usuario_perfil') == 'admin' %}
+<details>
+<summary>{{ 'Alterar código' if item.codigo_barras else 'Cadastrar código' }}</summary>
+<form method="post" action="{{ url_for('estoque.editar_codigo_barras', material_id=item.id) }}">
+<label for="codigo-material-{{ item.id }}">Código de barras</label>
+<input id="codigo-material-{{ item.id }}" type="text" name="codigo_barras" value="{{ item.codigo_barras or '' }}" maxlength="50" required>
+<button class="btn-sec btn-small" type="submit">Salvar código</button>
+</form>
+</details>
+{% endif %}
+</td>
 <td>{{ item.largura }}</td>
 <td>{{ item.bobinas }}</td>
 <td>{{ item.metros_restantes }}</td>
+<td>{{ item.estoque_minimo_formatado }}</td>
+<td>{% if item.abaixo_minimo %}<strong class="alerta-estoque-minimo">Abaixo do mínimo — repor</strong>{% else %}Dentro do limite{% endif %}</td>
 {% if session.get('usuario_perfil') == 'admin' %}
 <td>
 <div class="acoes-estoque">
@@ -146,6 +163,11 @@
 <input type="number" name="metros_disponiveis" step="0.01" min="0" value="{{ item.metros_restantes_valor }}" required>
 <button class="btn btn-small" type="submit">Salvar</button>
 </form>
+<form class="limite-estoque-form" method="post" action="{{ url_for('estoque.editar_estoque_minimo', material_id=item.id) }}">
+<label for="minimo-{{ item.id }}">Mínimo (m)</label>
+<input id="minimo-{{ item.id }}" type="number" name="estoque_minimo" step="0.01" min="0" value="{{ item.estoque_minimo }}" required>
+<button class="btn-sec btn-small" type="submit">Salvar mínimo</button>
+</form>
 </td>
 {% endif %}
 </tr>
@@ -159,7 +181,7 @@
 {% endfor %}
 
 {% if not secoes %}
-<p>Nenhum material cadastrado no estoque.</p>
+<p>{% if abaixo_minimo %}Nenhum material abaixo do estoque mínimo{% if busca %} para esta busca{% endif %}.{% else %}Nenhum material cadastrado no estoque.{% endif %}</p>
 {% endif %}
 
 {% if session.get('usuario_perfil') == 'admin' %}

@@ -7,7 +7,7 @@ from controllers.auth_required import login_required
 from models.cliente import Cliente
 from models.material import Material
 from models.pedido import Pedido
-from services.estoque_service import consumir_material, devolver_material
+from services.estoque_service import consumir_material, devolver_material, registrar_movimentacao
 from services.constantes import STATUS_PEDIDO
 from services.pedido_service import (
     atualizar_status_com_notificacao,
@@ -195,6 +195,10 @@ def processar_salvamento_pedido(form_data, pedido=None):
         material_anterior = obter_material_do_pedido(pedido)
         if material_anterior:
             devolver_material(material_anterior, pedido.metros_consumidos)
+            registrar_movimentacao(
+                material_anterior, "entrada", pedido.metros_consumidos,
+                session.get("usuario_id"), f"Estorno para edição do pedido #{pedido.id}",
+            )
 
     if not consumir_material(sugestao["material"], sugestao["metros_consumidos"]):
         db.session.rollback()
@@ -222,6 +226,11 @@ def processar_salvamento_pedido(form_data, pedido=None):
     pedido.area_total_m2 = area_total
     pedido.status = normalizar_status_pedido(pedido.status)
 
+    db.session.flush()
+    registrar_movimentacao(
+        sugestao["material"], "saida", pedido.metros_consumidos,
+        session.get("usuario_id"), f"Consumo do pedido #{pedido.id}",
+    )
     db.session.commit()
     return pedido, ""
 
@@ -334,12 +343,24 @@ def editar_pedido(id):
 @pedido_bp.route("/pedidos/<int:id>/cancelar", methods=["POST"])
 @login_required
 def cancelar_pedido(id):
-    """Cancela um pedido e devolve sua metragem ao estoque."""
+    """Cancela pedidos ainda nao prontos, estornando o material reservado."""
     pedido = Pedido.query.get_or_404(id)
+    if pedido.status in {"Pronto para retirada", "Finalizado"}:
+        flash(
+            "Pedidos prontos ou finalizados não podem ser cancelados: "
+            "o material já foi utilizado e não pode retornar ao estoque.",
+            "erro",
+        )
+        return redirect(url_for("pedido.detalhe_pedido", id=pedido.id))
+
     material = obter_material_do_pedido(pedido)
 
     if material:
         devolver_material(material, pedido.metros_consumidos)
+        registrar_movimentacao(
+            material, "entrada", pedido.metros_consumidos,
+            session.get("usuario_id"), f"Estorno por cancelamento do pedido #{pedido.id}",
+        )
 
     db.session.delete(pedido)
     db.session.commit()

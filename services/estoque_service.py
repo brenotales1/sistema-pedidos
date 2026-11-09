@@ -7,6 +7,16 @@ from models.movimentacao_estoque import MovimentacaoEstoque
 from services.constantes import METROS_POR_BOBINA
 
 
+def registrar_movimentacao(material, tipo, metros, usuario_id, motivo, bobinas=0):
+    """Inclui o historico na mesma transacao da alteracao de estoque."""
+    movimentacao = MovimentacaoEstoque(
+        material=material, tipo=tipo, quantidade_metros=round(metros, 2),
+        quantidade_bobinas=bobinas, usuario_id=usuario_id, motivo=motivo,
+    )
+    db.session.add(movimentacao)
+    return movimentacao
+
+
 def ordenar_bobinas_por_metragem(material):
     """Retorna as bobinas do material ordenadas pela menor metragem."""
     return sorted(material.bobinas, key=lambda bobina: bobina.metros_restantes)
@@ -147,7 +157,7 @@ def listar_movimentacoes(limite=100, material_id=None, tipo=None):
 
     return (
         consulta
-        .order_by(MovimentacaoEstoque.data_hora.desc())
+        .order_by(MovimentacaoEstoque.data_hora.desc(), MovimentacaoEstoque.id.desc())
         .limit(limite)
         .all()
     )

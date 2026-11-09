@@ -9,7 +9,7 @@
 
 <div class="pedido-header">
 <h2>{{ titulo_pagina }}</h2>
-{% if pedido %}
+{% if pedido and pedido.status not in ['Pronto para retirada', 'Finalizado'] %}
 <form method="post" action="/pedidos/{{ pedido.id }}/cancelar" onsubmit="return confirm('Deseja apagar/cancelar este pedido?');">
 <button type="submit" class="btn-danger">Apagar/Cancelar Pedido</button>
 </form>

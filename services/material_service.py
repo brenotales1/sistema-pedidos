@@ -80,7 +80,7 @@ def consolidar_materiais_repetidos():
     grupos = {}
 
     for material in Material.query.all():
-        chave = (normalizar_nome(material.categoria), normalizar_nome(material.nome))
+        chave = (normalizar_nome(material.categoria), normalizar_nome(material.nome), material.largura_m)
         grupos.setdefault(chave, []).append(material)
 
     for materiais in grupos.values():
@@ -93,6 +93,7 @@ def consolidar_materiais_repetidos():
         for pedido in Pedido.query.filter_by(
             categoria=material_principal.categoria,
             material_nome=material_principal.nome,
+            largura_bobina_usada_m=material_principal.largura_m,
         ).all():
             pedido.largura_bobina_usada_m = material_principal.largura_m
 
@@ -130,20 +131,13 @@ def seed_materials():
         db.session.commit()
 
     if not materiais:
-        db.session.add_all(Material(**item) for item in MATERIAIS_PADRAO)
-        db.session.commit()
-        materiais = Material.query.all()
-
-    novas_bobinas = []
-
-    for material in materiais:
-        if material.bobinas:
-            continue
-
-        novas_bobinas.append(BobinaEstoque(material_id=material.id, metros_restantes=METROS_POR_BOBINA))
-
-    if novas_bobinas:
-        db.session.add_all(novas_bobinas)
+        # Somente materiais criados neste seed recebem estoque inicial.
+        # Ausencia de bobinas em materiais existentes significa saldo zero.
+        for dados in MATERIAIS_PADRAO:
+            material = Material(**dados)
+            material.bobinas.append(BobinaEstoque(metros_restantes=METROS_POR_BOBINA))
+            db.session.add(material)
         db.session.commit()
 
-    consolidar_materiais_repetidos()
+    # Consolidacao de cadastros existentes deve ser uma operacao explicita,
+    # nunca um efeito colateral de iniciar a aplicacao.

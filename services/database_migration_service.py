@@ -15,6 +15,7 @@ def aplicar_migracoes():
     renomear_coluna_largura_bobina()
     garantir_coluna_empresa_cliente()
     garantir_coluna_codigo_barras_material()
+    garantir_coluna_estoque_minimo_material()
     garantir_tabela_historico_status_pedido()
     garantir_tabela_notificacao_whatsapp()
     db.session.commit()
@@ -170,3 +171,9 @@ def garantir_tabela_notificacao_whatsapp():
     """Cria apenas a nova tabela; reexecucoes preservam dados existentes."""
     from models.notificacao_whatsapp import NotificacaoWhatsApp
     NotificacaoWhatsApp.__table__.create(bind=db.engine, checkfirst=True)
+
+
+def garantir_coluna_estoque_minimo_material():
+    """Acrescenta o limite sem modificar saldos ou limites ja cadastrados."""
+    if "material" in listar_tabelas() and "estoque_minimo" not in listar_colunas("material"):
+        executar_sql('ALTER TABLE material ADD COLUMN estoque_minimo FLOAT NOT NULL DEFAULT 0')

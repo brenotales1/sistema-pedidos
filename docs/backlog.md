@@ -12,13 +12,13 @@ Este documento consolida as histórias de usuário priorizadas da aplicação, s
 | **2** | Como **administrador**, quero cadastrar um material com código de barras, para que ele possa ser identificado no estoque. | • Código de barras único<br>• Descrição e quantidade obrigatórias<br>• Material salvo após validação | **Must** | Sem. 5 | **Sprint 1** | **Concluída** |
 | **3** | Como **funcionário**, quero consultar os materiais cadastrados, para que eu saiba o que está disponível no estoque. | • Exibe descrição, código e quantidade<br>• Permite localizar um material<br>• Informa quando não encontrado | **Must** | Sem. 5 | **Sprint 1** | **Concluída** |
 | **4** | Como **funcionário**, quero identificar um material pelo código de barras, para que eu não precise procurá-lo manualmente. | • Código existente identifica o material<br>• Código inexistente exibe erro<br>• Não altera o estoque se inválido | **Must** | Sem. 8 | **Sprint 2** | **Concluída** |
-| **5** | Como **funcionário**, quero registrar a entrada de material pelo código de barras, para que o estoque seja atualizado automaticamente. | • Quantidade maior que zero<br>• Material cadastrado<br>• Estoque atualizado<br>• Movimentação registrada | **Must** | Sem. 8 | **Sprint 2** | **Em andamento** |
+| **5** | Como **funcionário**, quero registrar a entrada de material pelo código de barras, para que o estoque seja atualizado automaticamente. | • Quantidade maior que zero<br>• Material cadastrado<br>• Estoque atualizado<br>• Movimentação registrada | **Must** | Sem. 8 | **Sprint 2** | **Concluída** |
 | **6** | Como **funcionário**, quero consultar as movimentações do estoque, para que eu possa acompanhar as entradas realizadas. | • Exibe material, quantidade e data<br>• Lista as movimentações realizadas | **Should** | Sem. 8 | **Sprint 2** | **Em andamento** |
 | **7** | Como **funcionário**, quero selecionar uma atualização do pedido, para que o cliente seja informado sobre seu andamento. | • Pedido deve existir<br>• Cliente deve estar vinculado<br>• Atualização é registrada | **Must** | Sem. 10 | **Sprint 3** | **Concluída** |
 | **8** | Como **funcionário**, quero enviar uma notificação pelo WhatsApp, para que o cliente receba a atualização do pedido. | • Número do cliente é validado<br>• Mensagem contém pedido e atualização<br>• Sistema informa sucesso ou falha | **Must** | Sem. 10 | **Sprint 3** | **Concluída** |
 | **9** | Como **funcionário**, quero que determinadas atualizações do pedido enviem uma mensagem automaticamente, para que eu não precise avisar o cliente manualmente. | • Eventos definidos disparam mensagem<br>• Cliente correto é identificado<br>• Resultado do envio é registrado | **Must** | Sem. 10 | **Sprint 3** | **Concluída** |
 | **10** | Como **administrador**, quero consultar as notificações enviadas, para que eu possa verificar quais clientes foram comunicados. | • Exibe cliente, pedido, data e status<br>• Diferencia envios realizados e falhos | **Should** | Sem. 12 | **Sprint 4** | *Implementada; aguardando testes* |
-| **11** | Como **administrador**, quero visualizar materiais abaixo do estoque mínimo, para que eu possa identificar itens que precisam de reposição. | • Lista materiais abaixo do mínimo<br>• Exibe quantidade atual e mínima | **Should** | Sem. 12 | **Sprint 4** | *Planejada* |
+| **11** | Como **administrador**, quero visualizar materiais abaixo do estoque mínimo, para que eu possa identificar itens que precisam de reposição. | • Lista materiais abaixo do mínimo<br>• Exibe quantidade atual e mínima | **Should** | Sem. 12 | **Sprint 4** | *Implementada; aguardando testes* |
 | **12** | Como **administrador**, quero visualizar um painel de pedidos e estoque, para que eu acompanhe a situação da empresa. | • Exibe pedidos por status<br>• Exibe materiais abaixo do mínimo<br>• Dados vêm do banco de dados | **Could** | Sem. 12 | **Sprint 4** | *Planejada* |
 
 ---
@@ -32,7 +32,7 @@ Este documento consolida as histórias de usuário priorizadas da aplicação, s
 
 ### Sprint 2: Entrada e Movimentação por Código de Barras (🔄 Em andamento — Sem. 8)
 - **#4** Identificar material pelo código de barras (Sem. 8) — Concluído
-- **#5** Registrar entrada de material pelo código de barras (Sem. 8) — Em andamento
+- **#5** Registrar entrada de material pelo código de barras (Sem. 8) — Concluída
 - **#6** Consultar movimentações do estoque (Sem. 8) — Em andamento
 
 ### Sprint 3: Notificações & Automação WhatsApp (Concluída — Sem. 10)

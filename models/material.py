@@ -14,6 +14,16 @@ class Material(db.Model):
     largura_m = db.Column(db.Float, nullable=False)
     codigo_barras = db.Column(db.String(50), nullable=False, unique=True)
 
+    estoque_minimo = db.Column(db.Float, nullable=False, default=0.0, server_default="0")
+
+    @property
+    def abaixo_estoque_minimo(self):
+        return self.metros_disponiveis < self.estoque_minimo
+
+    @property
+    def estoque_minimo_formatado(self):
+        return f"{self.estoque_minimo:.2f}".replace(".", ",") + "m"
+
     bobinas = db.relationship(
         "BobinaEstoque",
         back_populates="material",

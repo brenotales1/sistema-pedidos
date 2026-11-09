@@ -1,6 +1,7 @@
 """Rotas e operacoes de interface para estoque."""
 
 from math import isfinite
+from sqlalchemy.exc import IntegrityError
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
 
@@ -8,7 +9,7 @@ from database.db import db
 from models.categoria_material import CategoriaMaterial
 from models.material import Material
 from services.constantes import METROS_POR_BOBINA
-from services.estoque_service import adicionar_bobina, ajustar_metros_disponiveis, listar_movimentacoes, registrar_entrada_estoque, remover_bobina
+from services.estoque_service import ajustar_metros_disponiveis, listar_movimentacoes, registrar_entrada_estoque, registrar_movimentacao, remover_bobina
 from services.material_service import buscar_material_por_codigo_barras, normalizar_nome
 from controllers.auth_required import login_required, admin_required
 
@@ -21,7 +22,7 @@ ORDEM_CATEGORIAS = {
 }
 
 
-def construir_secoes_estoque(busca=""):
+def construir_secoes_estoque(busca="", abaixo_minimo=False):
     """Agrupa materiais por categoria para exibicao na tela de estoque."""
     materiais = Material.query.all()
 
@@ -36,6 +37,9 @@ def construir_secoes_estoque(busca=""):
                 or busca in (material.codigo_barras or "")
             )
         ]
+    if abaixo_minimo:
+        materiais = [material for material in materiais if material.abaixo_estoque_minimo]
+
     materiais.sort(key=lambda item: (ORDEM_CATEGORIAS.get(item.categoria, 99), item.nome, item.largura_m))
 
     categorias = [categoria.nome for categoria in CategoriaMaterial.query.order_by(CategoriaMaterial.nome).all()]
@@ -49,6 +53,9 @@ def construir_secoes_estoque(busca=""):
         secoes.setdefault(material.categoria, [])
         secoes[material.categoria].append(
             {
+                "estoque_minimo": f"{material.estoque_minimo:.2f}",
+                "estoque_minimo_formatado": material.estoque_minimo_formatado,
+                "abaixo_minimo": material.abaixo_estoque_minimo,
                 "id": material.id,
                 "nome": material.nome,
                 "codigo_barras": material.codigo_barras,
@@ -67,7 +74,7 @@ def construir_secoes_estoque(busca=""):
     )
 ]
 
-    if busca:
+    if busca or abaixo_minimo:
        resultado = [
         secao
         for secao in resultado
@@ -83,12 +90,14 @@ def lista_estoque():
     """Exibe a tela principal de estoque."""
     busca = request.args.get("busca", "").strip()
 
-    secoes = construir_secoes_estoque(busca)
+    abaixo_minimo = request.args.get("abaixo_minimo") == "1"
+    secoes = construir_secoes_estoque(busca, abaixo_minimo=abaixo_minimo)
 
     return render_template(
         "estoque/lista.html",
         secoes=secoes,
         busca=busca,
+        abaixo_minimo=abaixo_minimo,
     )
 
 @estoque_bp.route("/estoque/categoria/nova", methods=["POST"])
@@ -136,9 +145,11 @@ def novo_estoque():
         try:
             largura_m = float(largura_texto)
             unidades = int(unidades_texto)
+            estoque_minimo = validar_estoque_minimo(request.form.get("estoque_minimo", "0"))
         except ValueError:
             largura_m = 0
             unidades = 0
+            estoque_minimo = 0
 
         if (
             not categoria
@@ -150,7 +161,7 @@ def novo_estoque():
         ):
             erro = (
                 "Preencha tipo, nome, código de barras, "
-                "largura e unidades com valores válidos."
+                "largura, unidades e estoque mínimo com valores válidos."
             )
         else:
             codigo_existente = Material.query.filter_by(
@@ -178,12 +189,16 @@ def novo_estoque():
                         nome=nome,
                         largura_m=largura_m,
                         codigo_barras=codigo_barras,
+                        estoque_minimo=estoque_minimo,
                     )
 
                     db.session.add(material)
                     db.session.flush()
 
-                    adicionar_bobina(material, unidades)
+                    registrar_entrada_estoque(
+                        material, unidades, usuario_id=session.get("usuario_id"),
+                        motivo="Estoque inicial no cadastro do material",
+                    )
                     db.session.commit()
 
                     flash("Material cadastrado com sucesso.", "sucesso")
@@ -201,7 +216,10 @@ def novo_estoque():
 def adicionar_unidade(material_id):
     """Adiciona uma bobina ao material informado."""
     material = Material.query.get_or_404(material_id)
-    adicionar_bobina(material, 1)
+    registrar_entrada_estoque(
+        material, 1, usuario_id=session.get("usuario_id"),
+        motivo="Adição manual de bobina",
+    )
     db.session.commit()
     return redirect(url_for("estoque.lista_estoque"))
 
@@ -211,7 +229,12 @@ def adicionar_unidade(material_id):
 def remover_unidade(material_id):
     """Remove uma bobina do material informado."""
     material = Material.query.get_or_404(material_id)
-    remover_bobina(material)
+    metros_antes = material.metros_disponiveis
+    if remover_bobina(material):
+        registrar_movimentacao(
+            material, "saida", metros_antes - material.metros_disponiveis,
+            session.get("usuario_id"), "Remoção manual de bobina", bobinas=1,
+        )
     db.session.commit()
     return redirect(url_for("estoque.lista_estoque"))
 
@@ -238,7 +261,14 @@ def editar_metros(material_id):
         flash("A metragem disponível não pode ser maior que a soma das bobinas cadastradas.", "erro")
         return redirect(url_for("estoque.lista_estoque"))
 
+    metros_antes = material.metros_disponiveis
     ajustar_metros_disponiveis(material, metros_disponiveis)
+    diferenca = round(material.metros_disponiveis - metros_antes, 2)
+    if diferenca:
+        registrar_movimentacao(
+            material, "ajuste", abs(diferenca), session.get("usuario_id"),
+            f"Ajuste manual: {metros_antes:.2f} m → {material.metros_disponiveis:.2f} m",
+        )
     db.session.commit()
     return redirect(url_for("estoque.lista_estoque"))
 
@@ -249,6 +279,10 @@ def excluir_material(material_id):
     """Exclui um material cadastrado no estoque."""
     material = Material.query.get_or_404(material_id)
     descricao_material = f"{material.nome} ({material.largura_formatada})"
+
+    if material.movimentacoes.first():
+        flash("Material com histórico de movimentações não pode ser excluído.", "erro")
+        return redirect(url_for("estoque.lista_estoque"))
 
     db.session.delete(material)
     db.session.commit()
@@ -352,3 +386,52 @@ def api_material_por_codigo(codigo_barras):
         "metros_disponiveis": material.metros_disponiveis_formatados,
         "codigo_barras": material.codigo_barras,
     })
+
+
+def validar_estoque_minimo(valor):
+    """Aceita um limite finito e nao negativo, em metros."""
+    minimo = float(str(valor).strip().replace(",", "."))
+    if not isfinite(minimo) or minimo < 0:
+        raise ValueError("Informe um estoque minimo finito maior ou igual a zero.")
+    return round(minimo, 2)
+
+
+@estoque_bp.route("/estoque/material/<int:material_id>/estoque-minimo", methods=["POST"])
+@admin_required
+def editar_estoque_minimo(material_id):
+    material = Material.query.get_or_404(material_id)
+    try:
+        minimo = validar_estoque_minimo(request.form.get("estoque_minimo", ""))
+    except ValueError:
+        flash("Informe um estoque minimo finito maior ou igual a zero.", "erro")
+        return redirect(url_for("estoque.lista_estoque"))
+    material.estoque_minimo = minimo
+    db.session.commit()
+    flash("Estoque minimo atualizado com sucesso.", "sucesso")
+    return redirect(url_for("estoque.lista_estoque"))
+
+
+@estoque_bp.route("/estoque/material/<int:material_id>/codigo-barras", methods=["POST"])
+@admin_required
+def editar_codigo_barras(material_id):
+    """Regulariza a identificacao sem alterar bobinas ou movimentacoes."""
+    material = Material.query.get_or_404(material_id)
+    codigo = request.form.get("codigo_barras", "").strip()
+    if not codigo or len(codigo) > 50 or any(ord(c) < 32 or ord(c) == 127 for c in codigo):
+        flash("Informe um código de barras válido, com até 50 caracteres.", "erro")
+        return redirect(url_for("estoque.lista_estoque"))
+    existente = Material.query.filter(
+        Material.codigo_barras == codigo, Material.id != material.id,
+    ).first()
+    if existente:
+        flash("Esse código de barras já está cadastrado em outro material.", "erro")
+        return redirect(url_for("estoque.lista_estoque"))
+    material.codigo_barras = codigo
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash("Não foi possível salvar: código de barras já utilizado. Atualize a página.", "erro")
+        return redirect(url_for("estoque.lista_estoque"))
+    flash("Código de barras atualizado com sucesso.", "sucesso")
+    return redirect(url_for("estoque.lista_estoque"))

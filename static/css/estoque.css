@@ -381,3 +381,22 @@
     flex:1;
     min-width:180px;
 }
+
+
+.tabela-estoque tr.estoque-abaixo-minimo {
+    background: #fff3dc;
+}
+.alerta-estoque-minimo {
+    color: #8a3900;
+}
+.limite-estoque-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+.limite-estoque-form input {
+    width: 90px;
+    padding: 6px;
+}
