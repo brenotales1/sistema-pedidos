@@ -72,7 +72,7 @@ Nenhum PR deve ser aceito na `main` ou `develop` se: (a) algum teste automatizad
 
 ---
 
-### 3.2. Notificações — CT42 a CT45 executados na Sprint 3; CT46 planejado para Sprint 4
+### 3.2. Notificações — CT42 a CT45 executados na Sprint 3; CT46 executado na Sprint 4
 
 | ID | História (E2) | Cenário | Entrada | Resultado esperado | Prioridade |
 |:---:|:---:|---|---|---|:---:|
@@ -80,7 +80,21 @@ Nenhum PR deve ser aceito na `main` ou `develop` se: (a) algum teste automatizad
 | **CT43** | #8, #9 | Falha ou erro no envio do WhatsApp | Serviço de envio simulando erro (timeout ou API fora) | Sistema avisa que houve erro no envio e não grava como enviado | **Alta** |
 | **CT44** | #7, #8 | Cliente com telefone inválido ou sem número | Pedido com cliente sem telefone ou formato incorreto | Sistema barra o envio e avisa que o telefone precisa ser corrigido | **Alta** |
 | **CT45** | #9 | Envio automático quando o pedido muda de status | Pedido alterado para 'Finalizado' | Sistema dispara automaticamente e registra tentativa vinculada ao histórico; repetir status não reenvia | **Alta** |
-| **CT46** | #10 | Consulta do histórico de mensagens enviadas | Administrador acessando a tela de histórico | Lista as notificações enviadas com pedido, cliente, data e status | **Média** |
+| **CT46** | #10 | Consulta do histórico de mensagens enviadas | Administrador acessando a tela de histórico `/notificacoes` | Lista tentativas com cliente, pedido, data/hora UTC e status; paginação de 25 registros; bloqueio para funcionário; sem disparo de mensagens | **Média** |
+
+---
+
+### 3.3. Casos de Teste Adicionados na Sprint 4 (Validação do MVP)
+
+| ID | História | Cenário | Procedimento / Entrada | Resultado Esperado | Prioridade |
+|:---:|:---:|---|---|---|:---:|
+| **CT47** | #6 | Movimentações em ciclo de vida de pedidos | Criação, edição e cancelamento de pedidos | Registra saída com pedido/motivo/usuário; estorno na edição e novo consumo; devolução no cancelamento | **Alta** |
+| **CT48** | #6 | Movimentações manuais no estoque | Cadastro de material, adição/remoção de bobina e ajuste de metragem | Cadastro e adição geram entrada; remoção gera saída da metragem removida; ajuste registra saldo anterior e posterior; salvar mesmo saldo não gera movimentação | **Alta** |
+| **CT49** | #6 | Consistência e integridade do histórico | Operações rejeitadas, rollback e exclusão de material com movimentação | Falhas desfazem saldo e histórico; material com movimentações não pode ser excluído; ordenação estritamente decrescente | **Alta** |
+| **CT50** | #11 | Gestão e alertas de estoque mínimo | Cadastro e edição por admin; tentativa por funcionário; saldo vs. mínimo | Admin configura e persiste mínimo; funcionário é bloqueado; valores inválidos rejeitados; alerta somente quando saldo < mínimo; filtro `?abaixo_minimo=1` | **Alta** |
+| **CT51** | — | Regras de cancelamento por status | Cancelamento em Pagamento pendente, Aguardando produção, Pronto para retirada e Finalizado | Permitido nos dois primeiros (estorna saldo e exclui pedido); bloqueado nos dois últimos inclusive via POST direto (preserva pedido e saldo) | **Alta** |
+| **CT52** | #2, #3, #4 | Regularização de códigos de barras antigos | Admin cadastra/corrige código; tentativa por funcionário; consulta e entrada | Admin atualiza; funcionário bloqueado; rejeita vazio, duplicado ou inválido; preserva bobinas e histórico; localiza por busca, API e entrada | **Alta** |
+| **CT53** | #2, #5 | Preservação de saldo na inicialização | Reinício da aplicação (`seed_materials`) com material esgotado ou parcial | Não repõe material com saldo zero nem altera saldos parciais; larguras distintas continuam separadas; consolidação não executa automaticamente | **Média** |
 
 ---
 
@@ -95,39 +109,45 @@ A cada entrega de sprint, salvamos os resultados dos testes e prints nas pastas:
 ## 5. Rastreabilidade com o Backlog
 
 - **#1 (Login e perfis):** CT01, CT02, CT08–CT14
-- **#2 (Cadastro com código de barras):** CT03, CT20, CT21
-- **#3 (Consulta de estoque):** CT04, CT22
-- **#4 (Identificação por código de barras):** CT06, CT23–CT25
-- **#5 (Entrada de material):** CT05, CT07, CT26–CT29
-- **#6 (Histórico de movimentações):** CT07, CT30–CT33
+- **#2 (Cadastro com código de barras):** CT03, CT20, CT21, CT52, CT53
+- **#3 (Consulta de estoque):** CT04, CT22, CT52
+- **#4 (Identificação por código de barras):** CT06, CT23–CT25, CT52
+- **#5 (Entrada de material):** CT05, CT07, CT26–CT29, CT48, CT52
+- **#6 (Histórico de movimentações):** CT07, CT30–CT33, CT47, CT48, CT49
 - **Cálculo de aproveitamento de corte:** CT36, CT37, CT38, CT39
 - **#7 e #8 (Envio manual de WhatsApp):** CT42, CT43, CT44
 - **#9 (Envio automático de WhatsApp):** CT43, CT45
 - **#10 (Histórico de notificações):** CT46
+- **#11 (Estoque mínimo):** CT50
+- **Regras de cancelamento seguro:** CT39, CT51
+
+---
 
 ## 6. Execução formal — Sprint 3 (E7)
 
-**Data de consolidação:** 18/10/2026. **Resultado:** 68 testes aprovados, incluindo 21 novos testes de notificações. Cada método conta como um teste; subcenários usam subTest.
+**Data de consolidação:** 18/10/2026. **Resultado:** 68 testes aprovados, incluindo 21 novos testes de notificações. Cada método conta como um teste; subcenários usam subTest. [Evidências com log integral](sprints/sprint-3-evidencias-teste.md).
 
-Os rótulos CT08/CT09 de notificações citados no planejamento da retrospectiva da Sprint 2 correspondem aqui a CT42–CT45. CT08 e CT09 da tabela histórica continuam designando autenticação.
+---
 
-**Pré-condições comuns:** cliente e usuário fictícios, sessão autenticada, SQLite em memória e variáveis Meta fictícias. Para caminhos de envio, TESTING=False apenas após instalar o mock de requests.post e a barreira na sessão HTTP. Para testar a proteção nativa, TESTING=True e WHATSAPP_ENABLED=True.
+## 7. Execução formal — Sprint 4 (E8 — Validação Final do MVP)
 
-| ID | Procedimento automatizado | Verificações | Execução/evidência |
-|---|---|---|---|
-| CT42 (#7, #8) | Finalizar pedido; simular resposta Meta 200/201 com messages[0].id | Payload contém cliente/pedido ou parâmetros de template; destino normalizado; timeout; resultado aceito; flash sucesso; tentativa persistida sem entrega confirmada | Aprovado — test_whatsapp.py, test_notificacao_visual.py, test_notificacao_persistencia.py |
-| CT43 (#8, #9) | Simular HTTP 400/500, Timeout, ConnectionError e JSON inválido | Resultado falha; código HTTP quando disponível; flash erro; pedido continua Finalizado; sem identificador de sucesso | Aprovado — três módulos de notificação |
-| CT44 (#7, #8) | Usar telefone inválido, vazio ou None; testar também pedido sem cliente no serviço | Não chama requests.post; sem_destinatario; flash orienta corrigir telefone; pedido permanece finalizado quando possui cliente vinculado | Aprovado — test_whatsapp.py e test_notificacao_visual.py |
-| CT45 (#9) | Finalizar, repetir status, alterar outro status, reabrir e finalizar novamente | Uma tentativa por transição; histórico com usuário; outros status não enviam; nova finalização cria nova tentativa | Aprovado — test_notificacao_persistencia.py |
-| Proteção de testes (#8, #9) | Finalizar com TESTING=True, serviço habilitado e credenciais fictícias preenchidas | bloqueado_testing no serviço/banco/flash; nenhuma chamada HTTP | Aprovado — três módulos de notificação |
+**Data de consolidação:** 10/11/2026. **Resultado:** **111 testes aprovados (100% de sucesso)**, sendo 68 testes existentes mantidos sem regressão e 43 novos testes implementados para os requisitos finais da Sprint 4.
 
-**Casos complementares:** conector desabilitado, credenciais ausentes, status incompatível, templates com parâmetros e hello_world, normalização de telefone e contrato básico GET/POST do webhook. O recebimento do webhook não comprova entrega.
+| Módulo de Teste | Casos Cobertos | Testes Aprovados | Evidência Principal |
+|---|---|:---:|---|
+| `tests/test_movimentacoes_sprint4.py` | CT47, CT48, CT49 (US #6) | 12 aprovados | Movimentações completas de pedidos, edições, devoluções, operações manuais, consistência e ordenação |
+| `tests/test_notificacoes_historico.py` | CT46 (US #10) | 7 aprovados | Acesso exclusivo admin, paginação 25 itens, filtros por status, ordenação e idempotência (sem envio) |
+| `tests/test_estoque_minimo.py` | CT50 (US #11) | 8 aprovados | Gestão de limite por admin, bloqueio a funcionário, alerta estrito quando saldo < mínimo e filtro |
+| `tests/test_cancelamento_pedido.py` | CT51 | 5 aprovados | Permitido em Pagamento pendente e Aguardando produção; bloqueio estrito em Pronto para retirada e Finalizado |
+| `tests/test_inicializacao_estoque.py` | CT53 | 4 aprovados | Reinício não altera materiais esgotados nem parciais; larguras distintas preservadas; consolidação não automática |
+| `tests/test_codigo_barras_materiais.py` | CT52 (US #2, #3, #4) | 7 aprovados | Admin corrige código; validações de unicidade/formato; preservação de histórico; busca e entrada funcional |
+| **Suíte pré-existente (regressão)** | CT01–CT45 | 68 aprovados | Login, clientes, pedidos, cálculo de corte, estoque legado e integração WhatsApp |
 
-**Reprodução no PowerShell:**
+**Comando de reprodução no PowerShell:**
 
 ```powershell
 $env:Path = "$PWD\.venv\Scripts;$env:Path"
-python -B -m unittest discover -s tests -q
+python -B -m unittest discover -s tests -v
 ```
 
-[Evidências com log integral e limitações](sprints/sprint-3-evidencias-teste.md). CT46 continua planejado; não integra os casos aprovados desta sprint.
+Relatório detalhado, logs de execução e matriz de resultados consolidados em [Evidências da Sprint 4](sprints/sprint-4-evidencias-teste.md).
