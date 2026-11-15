@@ -53,7 +53,8 @@ Dessa forma, o projeto é considerado aceito, sem necessidade de ajustes adicion
 
 **Cliente / Product Owner:** Breno Tales de Oliveira Leite
 
-**Assinatura:** Breno Tales de Oliveira Leite
+**Assinatura:**
+(Assinatura digital)
 
 **Data do aceite:** 15/11/2026
 

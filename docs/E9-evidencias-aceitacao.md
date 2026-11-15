@@ -29,9 +29,9 @@ Anexamos a captura do recebimento da notificação do pedido #3 no WhatsApp. O a
 
 A captura mostra a mensagem recebida:
 
-> Olá, Daniel Fredi! Seu pedido #3 foi finalizado e está pronto para retirada.
+Olá, Daniel Fredi! Seu pedido #3 foi finalizado e está pronto para retirada.
 
-**Resultado observado:** notificação referente ao pedido #3 recebida no aplicativo WhatsApp do destinatário. O horário exibido na mensagem é 00:36. A interface indica “Hoje”, sem uma data completa visível.
+**Resultado observado:** notificação referente ao pedido #3 recebida no aplicativo WhatsApp do destinatário(Daniel).
 
 ![Notificação do pedido 3 recebida no WhatsApp](screenshots/whatsapp-pedido-3.png)
 
