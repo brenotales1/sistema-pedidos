@@ -280,7 +280,7 @@ def excluir_material(material_id):
     material = Material.query.get_or_404(material_id)
     descricao_material = f"{material.nome} ({material.largura_formatada})"
 
-    if material.movimentacoes.first():
+    if material.movimentacoes.first() or material.consumos:
         flash("Material com histórico de movimentações não pode ser excluído.", "erro")
         return redirect(url_for("estoque.lista_estoque"))
 

@@ -1,0 +1,45 @@
+﻿<fieldset id="materiais-adicionais">
+<legend>Materiais adicionais</legend>
+<p>O material principal usa o cálculo de corte acima. Para outros materiais utilizados neste pedido, informe o consumo total em metros. Não repita o material principal.</p>
+<div id="linhas-materiais">
+{% for item in form_data.get('adicionais', []) %}
+<div class="material-adicional">
+<label>Material
+<select name="material_adicional_id" required>
+<option value="">Selecionar</option>
+{% for material in materiais_adicionais %}
+<option value="{{ material.id }}" {% if item.material_id|string == material.id|string %}selected{% endif %}>#{{ material.id }} - {{ material.categoria }} - {{ material.nome }} ({{ material.largura_formatada }})</option>
+{% endfor %}
+</select></label>
+<label>Consumo total (m)<input name="material_adicional_metros" type="number" min="0.01" step="0.01" value="{{ item.metros }}" required></label>
+<button type="button" class="btn-sec" data-remover-material>Remover</button>
+</div>
+{% endfor %}
+</div>
+<button type="button" class="btn-sec" id="adicionar-material">+ Adicionar material</button>
+<template id="modelo-material-adicional">
+<div class="material-adicional">
+<label>Material
+<select name="material_adicional_id" required>
+<option value="">Selecionar</option>
+{% for material in materiais_adicionais %}
+<option value="{{ material.id }}">#{{ material.id }} - {{ material.categoria }} - {{ material.nome }} ({{ material.largura_formatada }})</option>
+{% endfor %}
+</select></label>
+<label>Consumo total (m)<input name="material_adicional_metros" type="number" min="0.01" step="0.01" required></label>
+<button type="button" class="btn-sec" data-remover-material>Remover</button>
+</div>
+</template>
+</fieldset>
+<script>
+document.getElementById("adicionar-material").addEventListener("click", function () {
+    document.getElementById("linhas-materiais").appendChild(
+        document.getElementById("modelo-material-adicional").content.cloneNode(true)
+    );
+});
+document.getElementById("linhas-materiais").addEventListener("click", function (event) {
+    if (event.target.hasAttribute("data-remover-material")) {
+        event.target.closest(".material-adicional").remove();
+    }
+});
+</script>

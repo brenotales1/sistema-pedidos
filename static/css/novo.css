@@ -1,4 +1,4 @@
-.pedido-page{
+﻿.pedido-page{
     position:relative;
     display:flex;
     justify-content:center;
@@ -385,3 +385,22 @@
         grid-template-columns:1fr;
     }
 }
+
+#materiais-adicionais {
+    min-width: 0;
+    margin: 20px 0;
+    padding: 16px;
+    border: 1px solid #ccd6dd;
+    border-radius: 6px;
+}
+#materiais-adicionais legend { padding: 0 6px; font-weight: bold; }
+#materiais-adicionais p { color: #526573; line-height: 1.5; }
+.material-adicional {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 12px 0;
+}
+.material-adicional label { display: flex; flex: 1 1 200px; flex-direction: column; gap: 5px; }
+.material-adicional label:first-child { flex-grow: 2; }

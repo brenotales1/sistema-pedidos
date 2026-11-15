@@ -27,6 +27,11 @@ class Pedido(db.Model):
     status = db.Column(db.String(30), nullable=False, default="Pagamento pendente")
     criado_em = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
+    consumos = db.relationship(
+        "ConsumoMaterial", back_populates="pedido",
+        cascade="all, delete-orphan", order_by="ConsumoMaterial.material_id",
+    )
+
     @property
     def largura_bobina_formatada(self):
         """Retorna a largura da bobina usada formatada em metros."""

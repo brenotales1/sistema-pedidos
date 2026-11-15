@@ -1,4 +1,4 @@
-# Plano de Testes — Sistema Web de Controle de Estoque para Empresa de Comunicação Visual
+﻿# Plano de Testes — Sistema Web de Controle de Estoque para Empresa de Comunicação Visual
 
 **Equipe:** Breno Tales de Oliveira Leite (RA: 2840482423029) — Daniel Fredi Soares Pereira (RA: 2840482421054) · Laboratório de Engenharia de Software · ADS Fatec Ribeirão Preto
 
@@ -134,7 +134,7 @@ A cada entrega de sprint, salvamos os resultados dos testes e prints nas pastas:
 
 ## 7. Execução formal — Sprint 4 (E8 — Validação Final do MVP)
 
-**Data de consolidação:** 10/11/2026. **Resultado:** **111 testes aprovados (100% de sucesso)**, sendo 68 testes existentes mantidos sem regressão e 43 novos testes implementados para os requisitos finais da Sprint 4.
+**Data de consolidação:** 10/11/2026. **Resultado:** **115 testes aprovados (100% de sucesso)**, sendo 68 testes da suíte anterior e 47 testes adicionais: 43 nos seis módulos específicos listados abaixo e 4 ampliações nos módulos já existentes.
 
 | Módulo de Teste | Casos Cobertos | Testes Aprovados | Evidência Principal |
 |---|---|:---:|---|
@@ -144,7 +144,8 @@ A cada entrega de sprint, salvamos os resultados dos testes e prints nas pastas:
 | `tests/test_cancelamento_pedido.py` | CT51 | 5 aprovados | Permitido em Pagamento pendente e Aguardando produção; bloqueio estrito em Pronto para retirada e Finalizado |
 | `tests/test_inicializacao_estoque.py` | CT53 | 4 aprovados | Reinício não altera materiais esgotados nem parciais; larguras distintas preservadas; consolidação não automática |
 | `tests/test_codigo_barras_materiais.py` | CT52 (US #2, #3, #4) | 7 aprovados | Admin corrige código; validações de unicidade/formato; preservação de histórico; busca e entrada funcional |
-| **Suíte pré-existente (regressão)** | CT01–CT45 | 68 aprovados | Login, clientes, pedidos, cálculo de corte, estoque legado e integração WhatsApp |
+| **Módulos pré-existentes e ampliações** | CT01–CT45, CT54–CT55 e complementares | 72 aprovados | 68 testes da suíte anterior e 4 ampliações; login, clientes, pedidos, migração, corte, estoque e WhatsApp |
+| **Total** | **Suíte completa** | **115 aprovados** | **72 nos módulos pré-existentes + 43 nos seis módulos específicos** |
 
 **Comando de reprodução no PowerShell:**
 
@@ -154,3 +155,18 @@ python -B -m unittest discover -s tests -v
 ```
 
 Relatório detalhado, logs de execução e matriz de resultados consolidados em [Evidências da Sprint 4](sprints/sprint-4-evidencias-teste.md).
+
+---
+
+## 8. Complemento E10 — Relação N:N Pedido–Material
+
+A bateria histórica E9 permanece com 115 testes. A suíte atual acrescenta 16 testes em [test_consumo_material.py](../tests/test_consumo_material.py), totalizando **131 testes aprovados**. [Evidência e reprodução](E10-validacao-nn.md).
+
+| ID | Cenário | Resultado esperado |
+|---|---|---|
+| CT56 | Dois pedidos com dois materiais em comum, detalhe e busca | Quatro associações persistidas; baixa e exibição de todos os materiais |
+| CT57 | Edição e cancelamento com vários materiais | Estorno dos consumos anteriores, gravação dos novos sem duplicidade; bloqueio conforme status |
+| CT58 | Dados inválidos, estoque insuficiente e falhas de gravação | Rejeição sem alteração parcial de pedido, saldo, associação ou movimentação |
+| CT59 | Migração, reinício e integridade referencial | Tabela associativa criada, vínculo idempotente sem segunda baixa; legado não identificável preservado; material associado não excluído |
+
+Os 16 métodos detalham os grupos CT56–CT59 e incluem rollback no segundo consumo, no commit de edição e no cancelamento.

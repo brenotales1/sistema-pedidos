@@ -96,6 +96,8 @@ def preparar_banco(app=None):
     aplicar_migracoes()
     db.create_all()
     seed_materials()
+    from services.consumo_material_service import migrar_consumos_legados
+    migrar_consumos_legados()
     if app and not app.testing:
         from models.usuario import Usuario
         if not Usuario.query.first():

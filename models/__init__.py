@@ -10,3 +10,5 @@ from models.usuario import Usuario
 from models.historico_status_pedido import HistoricoStatusPedido
 
 from models.notificacao_whatsapp import NotificacaoWhatsApp
+
+from models.consumo_material import ConsumoMaterial

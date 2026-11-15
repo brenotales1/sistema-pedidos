@@ -1,164 +1,62 @@
-# Diagramas UML — Sistema Web de Controle de Estoque para Empresa de Comunicação Visual
+﻿# UML — Modelo final de pedidos e materiais
 
-## 1. Diagrama de Casos de Uso
+**Equipe:** Breno Tales de Oliveira Leite (RA: 2840482423029) — Daniel Fredi Soares Pereira (RA: 2840482421054)<br>
+**Atualização:** 15/11/2026
 
-```mermaid
-flowchart LR
-  Admin((Administrador))
-  Func((Funcionario))
-
-  Admin --> UC1[Acessar o sistema com usuario e senha]
-  Admin --> UC2[Cadastrar material com codigo de barras]
-  Admin --> UC3[Consultar materiais cadastrados]
-  Admin --> UC10[Consultar notificacoes enviadas]
-  Admin --> UC11[Visualizar materiais abaixo do estoque minimo]
-  Admin --> UC12[Visualizar painel de pedidos e estoque]
-
-  Func --> UC3
-  Func --> UC4[Identificar material pelo codigo de barras]
-  Func --> UC5[Registrar entrada de material pelo codigo de barras]
-  Func --> UC6[Consultar movimentacoes do estoque]
-  Func --> UC7[Selecionar atualizacao do pedido]
-  Func --> UC8[Enviar notificacao pelo WhatsApp]
-  Func --> UC9[Enviar notificacao automatica por evento do pedido]
-
-  UC5 -.include.-> UC4
-  UC9 -.include.-> UC8
-```
-
-## 2. Diagrama de Classes
+## 1. Classes do relacionamento N:N
 
 ```mermaid
 classDiagram
-  direction LR
-
-  class Perfil {
-    +id: int
-    +nome: string
-    +descricao: string
-  }
-
-  class Usuario {
-    +id: int
-    +nome: string
-    +email: string
-    +senhaHash: string
-  }
-
-  class Administrador {
-    +gerenciarUsuarios()
-    +consultarNotificacoes()
-    +visualizarDashboard()
-  }
-
-  class Funcionario {
-    +consultarPedidos()
-    +registrarEntradaEstoque()
-    +atualizarPedido()
-  }
-
-  class MovimentacaoEstoque {
-    +id: int
-    +material_id: int
-    +tipo: enum
-    +quantidade_metros: float
-    +quantidade_bobinas: int
-    +motivo: string
-    +usuario_id: int
-    +data_hora: datetime
-  }
-
-  class Material {
-    +id: int
-    +nome: string
-    +categoria: string
-    +codigoBarras: string
-    +larguraM: float
-    +estoqueMinimo: float
-    +metrosDisponiveis()
-  }
-
-  class BobinaEstoque {
-    +id: int
-    +metrosRestantes: float
-  }
-
-  class ConsumoMaterial {
-    +id: int
-    +metrosConsumidos: float
-    +larguraBobinaUsadaM: float
-    +orientacao: string
-  }
-
-  class Pedido {
-    +id: int
-    +status: string
-    +quantidade: int
-    +areaTotalM2: float
-    +criadoEm: datetime
-  }
-
-  class ItemPedido {
-    +id: int
-    +larguraPedidoM: float
-    +alturaPedidoM: float
-    +quantidade: int
-    +areaTotalM2: float
-  }
-
-  class ProdutoServico {
-    +id: int
-    +nome: string
-    +descricao: string
-    +valor: float
-  }
-
-  class Cliente {
-    +id: int
-    +nome: string
-    +telefone: string
-    +empresa: string
-  }
-
-  class NotificacaoWhatsApp {
-    +id: int
-    +mensagem: string
-    +dataEnvio: datetime
-    +status: enum
-  }
-
-  Usuario "N" -- "1" Perfil : possui
-  Administrador --|> Usuario
-  Funcionario --|> Usuario
-
-  Usuario "1" -- "N" MovimentacaoEstoque : registra
-  Material "1" -- "N" MovimentacaoEstoque : movimenta
-  Material "1" -- "N" BobinaEstoque : possui
-
-  Material "1" -- "N" ConsumoMaterial : utilizado_em
-  Pedido "1" -- "N" ConsumoMaterial : consome
-
-  Pedido "1" -- "N" ItemPedido : contem
-  ProdutoServico "1" -- "N" ItemPedido : compoe
-
-  Cliente "1" -- "N" Pedido : realiza
-  Pedido "1" -- "N" NotificacaoWhatsApp : gera
-  Cliente "1" -- "N" NotificacaoWhatsApp : recebe
+    class Pedido {
+        +id: int
+        +cliente_id: int
+        +status: string
+        +consumos: ConsumoMaterial[]
+    }
+    class Material {
+        +id: int
+        +nome: string
+        +largura_m: float
+        +metros_disponiveis: float
+        +consumos: ConsumoMaterial[]
+    }
+    class ConsumoMaterial {
+        +pedido_id: int
+        +material_id: int
+        +quantidade_metros: float
+        +principal: bool
+    }
+    Pedido "1" --> "0..*" ConsumoMaterial
+    Material "1" --> "0..*" ConsumoMaterial
 ```
 
-## 3. Rastreabilidade — caso de uso - história do backlog
+A classe associativa implementa a relação N:N e registra o consumo por pedido e material. A coleção pode estar vazia em pedidos antigos não identificados; pedidos novos possuem pelo menos o material principal.
 
-| Caso de uso | História(s) relacionada(s) (E2) |
-|---|---|
-| Acessar o sistema com usuario e senha | #1 |
-| Cadastrar material com codigo de barras | #2 |
-| Consultar materiais cadastrados | #3 |
-| Identificar material pelo codigo de barras | #4 |
-| Registrar entrada de material pelo codigo de barras | #5 |
-| Consultar movimentacoes do estoque | #6 |
-| Selecionar atualizacao do pedido | #7 |
-| Enviar notificacao pelo WhatsApp | #8 |
-| Enviar notificacao automatica por evento do pedido | #9 |
-| Consultar notificacoes enviadas | #10 |
-| Visualizar materiais abaixo do estoque minimo | #11 |
-| Visualizar painel de pedidos e estoque | #12 |
+## 2. Fluxo de salvamento
+
+```mermaid
+sequenceDiagram
+    actor Usuario
+    participant Tela
+    participant Controlador
+    participant Estoque
+    participant Banco
+    Usuario->>Tela: Informa principal e materiais adicionais
+    Tela->>Controlador: Envia pedido e consumos
+    Controlador->>Controlador: Valida cliente, corte, materiais e quantidades
+    alt Edicao
+        Controlador->>Estoque: Estorna todos os consumos anteriores
+    end
+    Controlador->>Estoque: Baixa cada material
+    Controlador->>Banco: Grava pedido, associacoes e movimentacoes
+    alt Falha
+        Controlador->>Banco: Rollback integral
+    else Sucesso
+        Controlador->>Banco: Commit
+        Controlador->>Tela: Detalhe com todos os materiais
+    end
+```
+
+O envio de notificações continua ligado à transição de status. A inclusão de materiais não dispara mensagens.
+
+Veja o [DER final](der.md), a [implementação](../models/consumo_material.py) e os [testes](../tests/test_consumo_material.py). A [UML E3](E3-uml.md) continua disponível como artefato histórico.

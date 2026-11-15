@@ -1,154 +1,67 @@
-# DER — Sistema Web de Controle de Estoque para Empresa de Comunicação Visual
+﻿# DER — Modelo implementado do Sistema de Pedidos e Controle de Estoque
 
-## 1. Diagrama
+**Equipe:** Breno Tales de Oliveira Leite (RA: 2840482423029) — Daniel Fredi Soares Pereira (RA: 2840482421054)<br>
+**Atualização:** 15/11/2026 — relação Pedido ↔ Material implementada na E10.
+
+## 1. Relacionamentos
 
 ```mermaid
 erDiagram
-  PERFIL ||--o{ USUARIO : possui
-  USUARIO ||--o| ADMINISTRADOR : especializa
-  USUARIO ||--o| FUNCIONARIO : especializa
+    CLIENTE o|--o{ PEDIDO : realiza
+    PEDIDO ||--o{ CONSUMO_MATERIAL : registra
+    MATERIAL ||--o{ CONSUMO_MATERIAL : utilizado_em
+    MATERIAL ||--o{ BOBINA_ESTOQUE : possui
+    MATERIAL ||--o{ MOVIMENTACAO_ESTOQUE : movimenta
+    USUARIO o|--o{ MOVIMENTACAO_ESTOQUE : registra
+    PEDIDO ||--o{ HISTORICO_STATUS_PEDIDO : possui
+    USUARIO ||--o{ HISTORICO_STATUS_PEDIDO : altera
+    HISTORICO_STATUS_PEDIDO ||--o| NOTIFICACAO_WHATSAPP : gera
+    PEDIDO ||--o{ NOTIFICACAO_WHATSAPP : referencia
+    CLIENTE ||--o{ NOTIFICACAO_WHATSAPP : recebe
 
-  USUARIO ||--o{ MOVIMENTACAO_ESTOQUE : registra
-  MATERIAL ||--o{ MOVIMENTACAO_ESTOQUE : movimenta
-  MATERIAL ||--o{ BOBINA_ESTOQUE : possui
-
-  PEDIDO ||--o{ CONSUMO_MATERIAL : consome
-  MATERIAL ||--o{ CONSUMO_MATERIAL : utilizado_em
-
-  PEDIDO ||--o{ ITEM_PEDIDO : contem
-  PRODUTO_SERVICO ||--o{ ITEM_PEDIDO : compoe
-
-  CLIENTE ||--o{ PEDIDO : realiza
-  PEDIDO ||--o{ NOTIFICACAO_WHATSAPP : gera
-  CLIENTE ||--o{ NOTIFICACAO_WHATSAPP : recebe
+    CONSUMO_MATERIAL {
+        int pedido_id PK,FK
+        int material_id PK,FK
+        float quantidade_metros
+        boolean principal
+    }
 ```
 
-## 2. Dicionário de dados
+**Pedido ↔ Material é N:N:** um pedido pode consumir vários materiais e um material pode participar de vários pedidos. Cada associação tem sua quantidade em metros. Cliente ↔ Pedido continua 1:N; pedidos legados podem ter cliente não vinculado.
 
-### Tabela: perfil
+## 2. Tabela associativa consumo_material
 
-| Campo | Tipo | Restrições | Descrição |
-|---|---|---|---|
-| id | INTEGER | PK | Identificador do perfil |
-| nome | VARCHAR(50) | NOT NULL, UNIQUE | Nome do perfil |
-| descricao | VARCHAR(160) | | Descricao do perfil |
+| Campo | Tipo | Restrição / uso |
+|---|---|---|
+| pedido_id | INTEGER | PK composta; FK para pedido.id |
+| material_id | INTEGER | PK composta; FK para material.id |
+| quantidade_metros | FLOAT | NOT NULL e CHECK > 0; consumo total do material no pedido |
+| principal | BOOLEAN | NOT NULL; identifica o material calculado pelo corte |
 
-### Tabela: usuario
+A chave composta impede repetir um material no mesmo pedido. A aplicação exige quantidades finitas, positivas, arredondadas a duas casas e estoque suficiente. Cada pedido criado pelo formulário tem um material principal e pode ter materiais adicionais.
 
-| Campo | Tipo | Restrições | Descrição |
-|---|---|---|---|
-| id | INTEGER | PK | Identificador do usuario |
-| perfil_id | INTEGER | FK -> perfil.id, NOT NULL | Perfil de acesso do usuario |
-| nome | VARCHAR(120) | NOT NULL | Nome do usuario |
-| email | VARCHAR(160) | NOT NULL, UNIQUE | E-mail usado no login |
-| senha_hash | VARCHAR(255) | NOT NULL | Senha armazenada de forma criptografada |
+A edição estorna todos os consumos anteriores e aplica os novos. O cancelamento permitido estorna todos e remove as associações. Pedido, consumos, estoque e movimentações são gravados na mesma transação. Material associado não pode ser excluído.
 
-### Tabela: administrador
+## 3. Outros modelos
 
-| Campo | Tipo | Restrições | Descrição |
-|---|---|---|---|
-| id | INTEGER | PK | Identificador do administrador |
-| usuario_id | INTEGER | FK -> usuario.id, NOT NULL, UNIQUE | Usuario associado ao administrador |
+| Modelo | Dados principais |
+|---|---|
+| Usuario | ID, nome, e-mail, senha com hash e perfil admin/funcionario |
+| Cliente | ID, nome, telefone e empresa |
+| Pedido | Cliente, dados históricos do material principal, medidas, corte, quantidade, área, status e criação |
+| CategoriaMaterial | Tipos de materiais cadastrados |
+| Material | Categoria, nome, largura, código único e estoque mínimo |
+| BobinaEstoque | Material e metros restantes |
+| MovimentacaoEstoque | Material, usuário, tipo, metros, bobinas, motivo e data |
+| HistoricoStatusPedido | Pedido, usuário, status anterior/novo e data |
+| NotificacaoWhatsApp | Transição única, pedido, cliente, resultado, identificador e erro |
 
-### Tabela: funcionario
+As definições completas estão em [models/](../models/) e o DDL SQLite atual em [schema.sql](../database/schema.sql). O [DER E3](E3-der.md) preserva o modelo conceitual original, que também previa entidades não implementadas como Perfil e ItemPedido.
 
-| Campo | Tipo | Restrições | Descrição |
-|---|---|---|---|
-| id | INTEGER | PK | Identificador do funcionario |
-| usuario_id | INTEGER | FK -> usuario.id, NOT NULL, UNIQUE | Usuario associado ao funcionario |
+## 4. Migração dos pedidos existentes
 
-### Tabela: cliente
+Na inicialização, a aplicação cria a tabela associativa e executa uma migração identificada por pedido_consumo_material_v1. A associação é feita somente quando categoria, nome e largura identificam um material e a metragem é válida. A migração preserva IDs, saldos e movimentações; não baixa o estoque novamente.
 
-| Campo | Tipo | Restrições | Descrição |
-|---|---|---|---|
-| id | INTEGER | PK | Identificador do cliente |
-| nome | VARCHAR(120) | NOT NULL | Nome do cliente |
-| telefone | VARCHAR(20) | | Telefone ou WhatsApp do cliente |
-| empresa | VARCHAR(120) | | Empresa do cliente |
+Pedidos sem material identificável permanecem consultáveis, sem associação inventada. A edição e o cancelamento desses pedidos ficam bloqueados até regularização do vínculo. A migração é executada uma vez, e reinícios não duplicam o consumo.
 
-### Tabela: pedido
-
-| Campo | Tipo | Restrições | Descrição |
-|---|---|---|---|
-| id | INTEGER | PK | Identificador do pedido |
-| cliente_id | INTEGER | FK -> cliente.id, NOT NULL | Cliente responsavel pelo pedido |
-| status | VARCHAR(30) | NOT NULL DEFAULT 'Pagamento pendente' | Status atual do pedido |
-| quantidade | INTEGER | NOT NULL, CHECK (quantidade > 0) | Quantidade solicitada |
-| area_total_m2 | FLOAT | NOT NULL, CHECK (area_total_m2 >= 0) | Area total do pedido |
-| criado_em | DATETIME | NOT NULL | Data de criacao do pedido |
-
-### Tabela: produto_servico
-
-| Campo | Tipo | Restrições | Descrição |
-|---|---|---|---|
-| id | INTEGER | PK | Identificador do produto ou servico |
-| nome | VARCHAR(120) | NOT NULL | Nome do produto ou servico |
-| descricao | VARCHAR(255) | | Descricao do produto ou servico |
-| valor | FLOAT | CHECK (valor >= 0) | Valor do produto ou servico |
-
-### Tabela: item_pedido
-
-| Campo | Tipo | Restrições | Descrição |
-|---|---|---|---|
-| id | INTEGER | PK | Identificador do item do pedido |
-| pedido_id | INTEGER | FK -> pedido.id, NOT NULL | Pedido ao qual o item pertence |
-| produto_servico_id | INTEGER | FK -> produto_servico.id, NOT NULL | Produto ou servico solicitado |
-| largura_pedido_m | FLOAT | NOT NULL, CHECK (largura_pedido_m > 0) | Largura informada no pedido |
-| altura_pedido_m | FLOAT | NOT NULL, CHECK (altura_pedido_m > 0) | Altura informada no pedido |
-| quantidade | INTEGER | NOT NULL, CHECK (quantidade > 0) | Quantidade do item |
-| area_total_m2 | FLOAT | NOT NULL, CHECK (area_total_m2 >= 0) | Area total do item |
-
-### Tabela: material
-
-| Campo | Tipo | Restrições | Descrição |
-|---|---|---|---|
-| id | INTEGER | PK | Identificador do material |
-| nome | VARCHAR(120) | NOT NULL | Nome do material |
-| categoria | VARCHAR(50) | NOT NULL | Categoria do material |
-| codigo_barras | VARCHAR(80) | NOT NULL, UNIQUE | Codigo de barras do material |
-| largura_m | FLOAT | NOT NULL, CHECK (largura_m > 0) | Largura do material em metros |
-| estoque_minimo | FLOAT | NOT NULL DEFAULT 0, CHECK (estoque_minimo >= 0) | Quantidade minima para alerta |
-| UNIQUE (categoria, nome, largura_m) | | UNIQUE | Impede variacao duplicada |
-
-### Tabela: bobina_estoque
-
-| Campo | Tipo | Restrições | Descrição |
-|---|---|---|---|
-| id | INTEGER | PK | Identificador da bobina |
-| material_id | INTEGER | FK -> material.id, NOT NULL | Material ao qual a bobina pertence |
-| metros_restantes | FLOAT | NOT NULL DEFAULT 50.0, CHECK (metros_restantes >= 0) | Metragem restante da bobina |
-
-### Tabela: movimentacao_estoque
-
-| Campo | Tipo | Restrições | Descrição |
-|---|---|---|---|
-| id | INTEGER | PK | Identificador da movimentacao |
-| material_id | INTEGER | FK -> material.id, NOT NULL | Material movimentado |
-| tipo | VARCHAR(20) | NOT NULL, CHECK IN ('entrada','saida','ajuste') | Tipo da movimentacao (entrada, saida ou ajuste) |
-| quantidade_metros | FLOAT | NOT NULL DEFAULT 0.0, CHECK (quantidade_metros >= 0) | Quantidade em metros movimentada |
-| quantidade_bobinas | INTEGER | NOT NULL DEFAULT 0, CHECK (quantidade_bobinas >= 0) | Quantidade de bobinas movimentadas |
-| motivo | VARCHAR(255) | | Motivo ou observação da movimentação |
-| usuario_id | INTEGER | FK -> usuario.id, NOT NULL | Usuario que registrou a movimentacao |
-| data_hora | DATETIME | NOT NULL | Data e hora em que a movimentacao foi registrada |
-
-### Tabela: consumo_material (associativa N:N entre pedido e material)
-
-| Campo | Tipo | Restrições | Descrição |
-|---|---|---|---|
-| id | INTEGER | PK | Identificador do consumo |
-| pedido_id | INTEGER | FK -> pedido.id, NOT NULL | Pedido que consumiu o material |
-| material_id | INTEGER | FK -> material.id, NOT NULL | Material utilizado no pedido |
-| metros_consumidos | FLOAT | NOT NULL, CHECK (metros_consumidos > 0) | Metragem consumida |
-| largura_bobina_usada_m | FLOAT | NOT NULL, CHECK (largura_bobina_usada_m > 0) | Largura da bobina usada |
-| orientacao | VARCHAR(30) | NOT NULL | Orientacao de aproveitamento do material |
-
-### Tabela: notificacao_whatsapp
-
-| Campo | Tipo | Restrições | Descrição |
-|---|---|---|---|
-| id | INTEGER | PK | Identificador da notificacao |
-| pedido_id | INTEGER | FK -> pedido.id, NOT NULL | Pedido relacionado a notificacao |
-| cliente_id | INTEGER | FK -> cliente.id, NOT NULL | Cliente notificado |
-| mensagem | VARCHAR(500) | NOT NULL | Mensagem enviada ao cliente |
-| data_envio | DATETIME | NOT NULL | Data de envio da notificacao |
-| status | VARCHAR(20) | NOT NULL, CHECK IN ('enviada','falha') | Resultado do envio |
+Faça backup do SQLite antes de iniciar a nova versão sobre um banco existente. A implementação foi testada em banco isolado; o deploy desta alteração não foi realizado nesta entrega.

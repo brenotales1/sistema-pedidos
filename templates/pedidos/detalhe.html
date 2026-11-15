@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block content %}
 
@@ -29,6 +29,23 @@
 <p><strong>Área total:</strong> {{ area_total }}</p>
 <p><strong>Metros descontados do estoque:</strong> {{ metros_consumidos }}</p>
 </div>
+
+<h3>Materiais consumidos neste pedido</h3>
+{% if pedido.consumos %}
+<table>
+<thead><tr><th>Material</th><th>Largura</th><th>Consumo (m)</th><th>Uso</th></tr></thead>
+<tbody>
+{% for item in pedido.consumos %}
+<tr><td>{{ item.material.nome }}</td><td>{{ item.material.largura_formatada }}</td>
+<td>{{ "%.2f"|format(item.quantidade_metros) }}</td>
+<td>{{ "Principal" if item.principal else "Adicional" }}</td></tr>
+{% endfor %}
+</tbody>
+</table>
+<p>O cálculo de corte acima refere-se ao material principal; os consumos adicionais foram informados em metros.</p>
+{% else %}
+<p>Pedido antigo: consumo registrado nos dados do material principal acima.</p>
+{% endif %}
 
 <div class="acoes">
 <a href="/pedidos/{{ pedido.id }}/editar" class="btn">Editar pedido</a>

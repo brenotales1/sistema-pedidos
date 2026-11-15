@@ -24,6 +24,8 @@ class Material(db.Model):
     def estoque_minimo_formatado(self):
         return f"{self.estoque_minimo:.2f}".replace(".", ",") + "m"
 
+    consumos = db.relationship("ConsumoMaterial", back_populates="material")
+
     bobinas = db.relationship(
         "BobinaEstoque",
         back_populates="material",
