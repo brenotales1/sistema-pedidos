@@ -1,4 +1,4 @@
-﻿# Plano de Testes — Sistema Web de Controle de Estoque para Empresa de Comunicação Visual
+# Plano de Testes — Sistema Web de Controle de Estoque para Empresa de Comunicação Visual
 
 **Equipe:** Breno Tales de Oliveira Leite (RA: 2840482423029) — Daniel Fredi Soares Pereira (RA: 2840482421054) · Laboratório de Engenharia de Software · ADS Fatec Ribeirão Preto
 
@@ -160,7 +160,7 @@ Relatório detalhado, logs de execução e matriz de resultados consolidados em 
 
 ## 8. Complemento E10 — Relação N:N Pedido–Material
 
-A bateria histórica E9 permanece com 115 testes. A suíte atual acrescenta 16 testes em [test_consumo_material.py](../tests/test_consumo_material.py), totalizando **131 testes aprovados**. [Evidência e reprodução](E10-validacao-nn.md).
+A bateria histórica E9 permanece com 115 testes. A suíte atual acrescenta 16 testes em [test_consumo_material.py](../tests/test_consumo_material.py), totalizando **131 testes aprovados**.
 
 | ID | Cenário | Resultado esperado |
 |---|---|---|

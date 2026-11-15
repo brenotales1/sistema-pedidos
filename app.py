@@ -98,15 +98,7 @@ def preparar_banco(app=None):
     seed_materials()
     from services.consumo_material_service import migrar_consumos_legados
     migrar_consumos_legados()
-    if app and not app.testing:
-        from models.usuario import Usuario
-        if not Usuario.query.first():
-            admin = Usuario(nome="Administrador", email="admin@sistema.com", perfil="admin")
-            admin.definir_senha("123456")
-            func = Usuario(nome="Funcionário", email="funcionario@sistema.com", perfil="funcionario")
-            func.definir_senha("123456")
-            db.session.add_all([admin, func])
-            db.session.commit()
+
 
 
 app = create_app()

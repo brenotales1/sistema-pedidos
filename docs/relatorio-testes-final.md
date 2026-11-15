@@ -1,4 +1,4 @@
-﻿# Relatório de Testes Executados — Sistema Web de Controle de Estoque para Empresa de Comunicação Visual
+# Relatório de Testes Executados — Sistema Web de Controle de Estoque para Empresa de Comunicação Visual
 
 **Entrega:** E9 — Relatório consolidado de testes executados<br>
 **Equipe:** Breno Tales de Oliveira Leite (RA: 2840482423029) — Daniel Fredi Soares Pereira (RA: 2840482421054) · Laboratório de Engenharia de Software · ADS Fatec Ribeirão Preto<br>
@@ -139,6 +139,6 @@ Registramos abaixo o parecer do PO e os resultados disponíveis para cada área.
 
 ## 5. Atualização posterior — N:N na E10
 
-Após esta bateria de 115 testes, implementamos a relação N:N Pedido–Material por ConsumoMaterial. A nova suíte foi executada separadamente, com **131 testes aprovados** (115 anteriores e 16 novos). O [relatório complementar](E10-validacao-nn.md) e o [log](E10-testes-nn.txt) registram essa execução.
+Após esta bateria de 115 testes, implementamos a relação N:N Pedido–Material por ConsumoMaterial. A nova suíte foi executada separadamente, com **131 testes aprovados** (115 anteriores e 16 novos).
 
 O resultado e o aceite históricos das seções anteriores correspondem à versão originalmente avaliada. A mudança de interface e de modelo foi validada localmente; não foi apresentada como uma nova aprovação do PO nem como funcionalidade já publicada no Render.

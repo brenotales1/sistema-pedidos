@@ -1,4 +1,4 @@
-﻿# Documentação Final — Sistema Web de Controle de Estoque para Empresa de Comunicação Visual
+# Documentação Final — Sistema Web de Controle de Estoque para Empresa de Comunicação Visual
 
 **Entrega:** E10 — Documentação Final Consolidada<br>
 **Equipe:** Breno Tales de Oliveira Leite (RA: 2840482423029) — Daniel Fredi Soares Pereira (RA: 2840482421054) · Laboratório de Engenharia de Software · ADS Fatec Ribeirão Preto<br>
@@ -56,7 +56,7 @@ Os 11 itens foram registrados como entregues e aceitos na E9b. As diferenças de
 | Deploy, inicialmente a definir | Definido | URL pública no Render informada para esta consolidação |
 | Modelo conceitual E3 | N:N implementada na E10 | ConsumoMaterial associa Pedido e Material com quantidade em metros; os dados antigos do principal foram preservados. Perfil e ItemPedido continuam conceitos não implementados como tabelas separadas |
 
-A relação N:N Pedido–Material foi implementada por ConsumoMaterial na E10 e validada com dois pedidos compartilhando dois materiais. Os diagramas históricos da E3 foram preservados. O [DER final](der.md), a [UML final](uml.md) e o [DDL implementado](../database/schema.sql) descrevem a versão atual. A [validação N:N](E10-validacao-nn.md) registra migração, integridade e regressão. Essa mudança é posterior ao aceite histórico da E9 e ainda não foi publicada no Render.
+A relação N:N Pedido–Material foi implementada por ConsumoMaterial na E10 e validada com dois pedidos compartilhando dois materiais. Os diagramas históricos da E3 foram preservados. O [DER final](der.md), a [UML final](uml.md) e o [DDL implementado](../database/schema.sql) descrevem a versão atual. Essa mudança é posterior ao aceite histórico da E9 e ainda não foi publicada no Render.
 
 O banco de dados do projeto é SQLite. Conforme informado pelo responsável, o banco local não foi migrado para o Render. As opções de configuração estão no README.
 
@@ -113,7 +113,7 @@ Os IDs correspondem ao [plano atualizado](plano-de-testes.md). A [E9](relatorio-
 | 9. Envio automático | [HistoricoStatusPedido](../models/historico_status_pedido.py), [NotificacaoWhatsApp](../models/notificacao_whatsapp.py) | [pedido_service](../services/pedido_service.py) | [persistência](../tests/test_notificacao_persistencia.py): CT43, CT45 |
 | 10. Histórico de notificações | [NotificacaoWhatsApp](../models/notificacao_whatsapp.py) | [notificacao_controller](../controllers/notificacao_controller.py) | [histórico](../tests/test_notificacoes_historico.py): CT46 |
 | 11. Estoque mínimo | [Material](../models/material.py) | [estoque_controller](../controllers/estoque_controller.py), [migrações](../services/database_migration_service.py) | [estoque mínimo](../tests/test_estoque_minimo.py): CT50 |
-| Relação N:N Pedido–Material | [ConsumoMaterial](../models/consumo_material.py) | [serviço de consumo e migração](../services/consumo_material_service.py), [controlador](../controllers/pedido_controller.py), [formulário](../templates/pedidos/_materiais_adicionais.html) | [16 testes N:N](../tests/test_consumo_material.py), CT56–CT59; [evidência](E10-validacao-nn.md) |
+| Relação N:N Pedido–Material | [ConsumoMaterial](../models/consumo_material.py) | [serviço de consumo e migração](../services/consumo_material_service.py), [controlador](../controllers/pedido_controller.py), [formulário](../templates/pedidos/_materiais_adicionais.html) | [16 testes N:N](../tests/test_consumo_material.py), CT56–CT59 |
 
 Clientes, migrações, corte, cancelamento e inicialização também possuem testes complementares, descritos na E9. A E9 registrou 115 testes aprovados. A regressão atual da E10, após o N:N, tem 131 testes aprovados; cobertura percentual de linhas e branches não foi mensurada.
 

@@ -53,7 +53,7 @@ Sistema web desenvolvido para centralizar a gestão de pedidos, clientes e contr
    ```bash
    python criar_usuario.py
    ```
-   *(Cria o administrador `admin@sistema.com` e o funcionário `funcionario@sistema.com` com senha padrão `123456`)*
+   *(Informe os dados da conta pelo terminal. Credenciais devem ser compartilhadas em canal privado.)*
 7. Rode as migrations/seed (se houver):
    O seed inicial de materiais padrão com código de barras é executado automaticamente na inicialização da aplicação (`app.py`).
 8. Suba o projeto:

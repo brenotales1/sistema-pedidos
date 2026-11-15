@@ -1,4 +1,4 @@
-﻿# E10 — Documentação Final Consolidada e Manual do Usuário
+# E10 — Documentação Final Consolidada e Manual do Usuário
 
 **Equipe:** Breno Tales de Oliveira Leite (RA: 2840482423029) — Daniel Fredi Soares Pereira (RA: 2840482421054) · Laboratório de Engenharia de Software · ADS Fatec Ribeirão Preto<br>
 **Data da preparação:** 15/11/2026<br>
@@ -18,11 +18,11 @@
 
 Consolidamos os artefatos do semestre sem substituir os documentos históricos. Conferimos as orientações do manual com as telas, permissões e regras do código atual. Registramos a URL pública informada, a bateria de 115 testes da E9 e a evidência real de recebimento pelo WhatsApp.
 
-A matriz de rastreabilidade liga cada item da E2b aos modelos, controladores, serviços e testes. As diferenças entre o modelo E3 e a implementação final estão explicitadas, incluindo a relação N:N Pedido–Material agora implementada por ConsumoMaterial. O [DER](der.md), a [UML](uml.md) e a [validação N:N](E10-validacao-nn.md) registram a atualização.
+A matriz de rastreabilidade liga cada item da E2b aos modelos, controladores, serviços e testes. As diferenças entre o modelo E3 e a implementação final estão explicitadas, incluindo a relação N:N Pedido–Material agora implementada por ConsumoMaterial. O [DER](der.md) e a [UML](uml.md) registram a atualização.
 
 ## 3. Finalização da documentação
 
-Os documentos da E10 estão organizados, com índice consolidado, manual do usuário, capturas e rastreabilidade dos requisitos. A relação N:N Pedido–Material está implementada e a suíte registra **131 testes aprovados**. O [relatório de validação](E10-validacao-nn.md) detalha a versão e as condições dessa execução.
+Os documentos da E10 estão organizados, com índice consolidado, manual do usuário, capturas e rastreabilidade dos requisitos. A relação N:N Pedido–Material está implementada e a suíte registra **131 testes aprovados**.
 
 **Pendência documental:**
 

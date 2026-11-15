@@ -1,4 +1,4 @@
-﻿# Sistema Web de Controle de Estoque para Empresa de Comunicação Visual
+# Sistema Web de Controle de Estoque para Empresa de Comunicação Visual
 
 Sistema web para gerenciar clientes, pedidos, estoque de bobinas e notificações pelo WhatsApp.
 
@@ -72,14 +72,9 @@ Use Python 3.12 para reproduzir o ambiente documentado nos testes, além de Git.
 
 No Linux/macOS, use `python3 -m venv .venv`, `source .venv/bin/activate`, `pip install -r requirements.txt`, `cp .env.example .env` e `python app.py`.
 
-A inicialização aplica as migrações da aplicação, cria as tabelas e prepara os materiais iniciais. A migração ConsumoMaterial associa os pedidos antigos a materiais identificáveis sem baixar novamente o estoque; faça backup do SQLite antes de iniciar esta versão sobre dados existentes. Em banco sem usuários, cria as contas locais abaixo; `python criar_usuario.py` também permite criar as contas ausentes.
+A inicialização aplica as migrações da aplicação, cria as tabelas e prepara os materiais iniciais. A migração ConsumoMaterial associa os pedidos antigos a materiais identificáveis sem baixar novamente o estoque; faça backup do SQLite antes de iniciar esta versão sobre dados existentes.
 
-| Perfil de demonstração local | E-mail | Senha inicial |
-|---|---|---|
-| Administrador | admin@sistema.com | 123456 |
-| Funcionário | funcionario@sistema.com | 123456 |
-
-Essas são contas de demonstração local. Antes de expor o serviço, defina credenciais próprias; não dependa das contas padrão em produção. O comando `python app.py` executa o servidor de desenvolvimento com debug.
+Para cadastrar uma conta local, execute `python criar_usuario.py` e informe os dados pelo terminal. As credenciais de acesso devem ser fornecidas pelo responsavel em canal privado. O comando `python app.py` executa o servidor de desenvolvimento com debug.
 
 ## Configuração
 
@@ -120,7 +115,7 @@ No PowerShell:
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -v
 ```
 
-A bateria original da E9 registrou **115 testes aprovados**. Após a implementação N:N na E10, a suíte atual executou **131 testes aprovados**: os 115 anteriores e 16 novos testes de consumo, migração e integridade. Consulte a [validação N:N](docs/E10-validacao-nn.md) e o [log](docs/E10-testes-nn.txt). Os testes de integração externa usam mocks, e a cobertura de linhas/branches não foi mensurada. Consulte o [plano atualizado](docs/plano-de-testes.md) e o [relatório final](docs/relatorio-testes-final.md).
+A bateria original da E9 registrou **115 testes aprovados**. Após a implementação N:N na E10, a suíte atual executou **131 testes aprovados**: os 115 anteriores e 16 novos testes de consumo, migração e integridade. Os testes de integração externa usam mocks, e a cobertura de linhas/branches não foi mensurada. Consulte o [plano atualizado](docs/plano-de-testes.md) e o [relatório final](docs/relatorio-testes-final.md).
 
 ## Estrutura
 
