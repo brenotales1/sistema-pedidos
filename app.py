@@ -96,8 +96,59 @@ def preparar_banco(app=None):
     aplicar_migracoes()
     db.create_all()
     seed_materials()
+    seed_usuarios()
     from services.consumo_material_service import migrar_consumos_legados
     migrar_consumos_legados()
+
+
+def seed_usuarios():
+    """Cria usuarios iniciais a partir de variaveis de ambiente, se nao existirem.
+
+    Suporta ate dois usuarios via prefixos SEED_ e SEED2_.
+    Variaveis esperadas para cada usuario:
+      SEED_EMAIL,  SEED_NOME,  SEED_PERFIL  (admin/funcionario), SEED_SENHA
+      SEED2_EMAIL, SEED2_NOME, SEED2_PERFIL (admin/funcionario), SEED2_SENHA
+
+    Se qualquer variavel obrigatoria estiver ausente ou invalida, aquele
+    usuario e ignorado silenciosamente.
+    """
+    import os
+    from models.usuario import Usuario
+
+    logger = logging.getLogger(__name__)
+
+    candidatos = [
+        {
+            "email":  os.environ.get("SEED_EMAIL",  "").strip(),
+            "nome":   os.environ.get("SEED_NOME",   "").strip(),
+            "perfil": os.environ.get("SEED_PERFIL", "admin").strip(),
+            "senha":  os.environ.get("SEED_SENHA",  "").strip(),
+        },
+        {
+            "email":  os.environ.get("SEED2_EMAIL",  "").strip(),
+            "nome":   os.environ.get("SEED2_NOME",   "").strip(),
+            "perfil": os.environ.get("SEED2_PERFIL", "funcionario").strip(),
+            "senha":  os.environ.get("SEED2_SENHA",  "").strip(),
+        },
+    ]
+
+    for c in candidatos:
+        if not all([c["email"], c["nome"], c["senha"]]):
+            continue
+        if len(c["senha"]) < 12:
+            logger.warning("Seed: senha de '%s' muito curta, ignorado.", c["email"])
+            continue
+        if c["perfil"] not in {"admin", "funcionario"}:
+            logger.warning("Seed: perfil invalido para '%s', ignorado.", c["email"])
+            continue
+        if Usuario.query.filter_by(email=c["email"]).first():
+            continue
+
+        u = Usuario(nome=c["nome"], email=c["email"], perfil=c["perfil"])
+        u.definir_senha(c["senha"])
+        db.session.add(u)
+        db.session.commit()
+        logger.info("Seed: usuario %s (%s) criado.", c["email"], c["perfil"])
 
 
 
