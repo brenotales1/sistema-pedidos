@@ -25,14 +25,22 @@ def preencher_cliente(cliente, form_data):
     cliente.empresa = form_data["empresa"] or None
 
 
-def validar_cliente(form_data):
-    """Valida os campos obrigatorios do cadastro de cliente."""
-    if not form_data["nome"]:
+def validar_cliente(form_data, cliente_id=None):
+    """Valida os campos obrigatorios e a unicidade de nome do cliente."""
+    nome = form_data.get("nome", "").strip()
+    if not nome:
         return "Informe o nome do cliente."
 
     for campo, limite in (("nome", 120), ("telefone", 20), ("empresa", 120)):
-        if len(form_data[campo]) > limite:
+        if len(form_data.get(campo, "")) > limite:
             return f"O campo {campo} deve ter no maximo {limite} caracteres."
+
+    query = Cliente.query.filter(db.func.lower(Cliente.nome) == nome.lower())
+    if cliente_id:
+        query = query.filter(Cliente.id != cliente_id)
+    existente = query.first()
+    if existente:
+        return f"{existente.nome} já possui cadastro"
 
     return ""
 
@@ -80,7 +88,7 @@ def editar_cliente(id):
 
     if request.method == "POST":
         form_data = extrair_form_data_cliente(request.form)
-        erro = validar_cliente(form_data)
+        erro = validar_cliente(form_data, cliente_id=cliente.id)
 
         if erro:
             return render_template("clientes/editar.html", cliente=cliente, erro=erro, form_data=form_data)

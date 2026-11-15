@@ -10,7 +10,7 @@
 |---|:---:|:---:|---|
 | #7 Selecionar uma atualização do pedido | Sim | Sim | Cliente obrigatório no cadastro; edição de legado com vínculo explícito; transições auditadas em `HistoricoStatusPedido`. Regressão em `test_pedidos.py` e `test_migracao_cliente.py`. |
 | #8 Enviar uma notificação pelo WhatsApp | Sim | Sim | Conector via `requests` para Meta Cloud API; telefone validado, texto ou template, retorno de aceite/falha e feedback flash. CT42–CT44. |
-| #9 Envio automático por evento do pedido | Sim | Sim | Transição para `Finalizado` cria tentativa vinculada ao histórico, chama o conector e persiste o resultado. Repetir o mesmo status não reenvia. CT45. |
+| #9 Envio automático por evento do pedido | Sim | Sim | Transição para `Pronto para retirada` cria tentativa vinculada ao histórico, chama o conector e persiste o resultado. Repetir o mesmo status não reenvia. CT45. |
 
 **Meta técnica entregue:** 3 histórias concluídas, com testes automatizados de contrato HTTP, interface e persistência. Breno implementou os fluxos e o conector; Daniel acrescentou 21 testes e a documentação da E7.
 
@@ -18,8 +18,8 @@
 
 1. Autenticar um funcionário, cadastrar ou selecionar um cliente e associá-lo a um pedido.
 2. Alterar o status do pedido: a aplicação registra usuário responsável, status anterior e novo status.
-3. Na transição para `Finalizado`, criar uma tentativa em `notificacao_whatsapp` e solicitar o envio ao telefone do cliente.
-4. Para HTTP 200/201 simulado, registrar `aceito` e mostrar sucesso; para HTTP 400/500 ou erro de rede, registrar `falha`, avisar o operador e preservar o pedido finalizado.
+3. Na transição para `Pronto para retirada`, criar uma tentativa em `notificacao_whatsapp` e solicitar o envio ao telefone do cliente.
+4. Para HTTP 200/201 simulado, registrar `aceito` e mostrar sucesso; para HTTP 400/500 ou erro de rede, registrar `falha`, avisar o operador e preservar o status do pedido.
 5. Para telefone inválido/ausente, impedir a chamada HTTP, registrar `sem_destinatario` e orientar a correção do cadastro.
 6. Com `TESTING=True`, registrar `bloqueado_testing` sem chamada externa.
 
@@ -39,6 +39,7 @@ Comando: `python -B -m unittest discover -s tests -q`, usando o Python do ambien
 
 - [Retrospectiva técnica](sprint-3-retrospectiva.md)
 - [Contribuição de Daniel Fredi](sprint-3-contribuicao-daniel.md)
+- [Contribuição de Breno Tales](sprint-3-contribuicao-breno.md)
 
 ## 6. Limites e próximos passos
 

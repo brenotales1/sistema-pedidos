@@ -24,7 +24,7 @@
 
 - [x] Dailies/weeklies (alinhamentos assíncronos e planejamento técnico da Sprint 3)
 - [x] Sprint Review (apresentação dos incrementos da Sprint 3 e fluxo de notificação)
-- [ ] Retrospectiva da Sprint 3
+- [x] Retrospectiva da Sprint 3
 
 ---
 
@@ -39,5 +39,5 @@
 ## 4. Dificuldades e o que aprendi
 
 - **Coexistência de Número de Telefone (WhatsApp Comercial vs. Cloud API):** Enfrentamos a limitação imposta pela Meta que impede a coexistência de um mesmo número no aplicativo WhatsApp (seja pessoal ou WhatsApp Business móvel) e na WhatsApp Cloud API simultaneamente. Como a empresa precisa do número para o contato e atendimento direto aos clientes e simultaneamente para os envios automatizados do sistema, identificamos que a solução ideal para produção é utilizar o número de telefone fixo da empresa cadastrado exclusivamente na Cloud API, mantendo o número móvel para a comunicação manual da equipe.
-- **Restrições de Envio no Ambiente de Testes da Meta:** Durante os testes na plataforma de desenvolvedores da Meta, deparamos com o fato de que o número de teste padrão fornecido pela Meta é americano (+1), impondo restrições rígidas no envio para números brasileiros (+55), que exigem cadastro manual prévio como destinatários verificados. Isso reforçou a necessidade de validação cuidadosa do formato E.164 (`phonenumbers`) e consolidou a decisão de ativação do número fixo comercial da própria empresa na conta empresarial da Meta.
-- **Webhook e Recepção de Callbacks em Ambiente Local:** O endpoint de Webhook (`/webhook/whatsapp`) foi implementado com validação de token e suporte a eventos da Graph API. Contudo, devido ao sistema estar em ambiente de desenvolvimento local (localhost) sem exposição a uma rede pública com IP fixo ou túnel com SSL válido, a Meta não consegue realizar o callback assíncrono para notificar alterações de status (entregue/lido). Aprendi sobre os requisitos de infraestrutura e segurança necessários para webhooks corporativos, suprindo essa etapa no ambiente de desenvolvimento por meio de testes automatizados e simulação com mocks.
+- **Restrições de Envio no Ambiente de Testes da Meta:** Restrições de envio no ambiente de testes da Meta: Durante os testes, percebemos que o número disponibilizado pela Meta tinha restrições para enviar mensagens para números brasileiros. Era necessário cadastrar os destinatários antes de enviar as mensagens. Com isso, vimos a importância de validar os números de telefone corretamente e decidimos utilizar o número comercial da empresa para realizar a integração.
+- **Webhook e Recepção de Callbacks em Ambiente Local:** O endpoint de Webhook (`/webhook/whatsapp`) foi criado para receber notificações do WhatsApp. Porém, como o sistema está rodando localmente, a Meta não consegue enviar essas notificações. Por isso, foram feitos testes automatizados e simulações para verificar se o funcionamento está correto. Também aprendi sobre os requisitos necessários para disponibilizar esse recurso em um ambiente real.

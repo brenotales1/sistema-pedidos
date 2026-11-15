@@ -43,7 +43,7 @@ Todas as funcionalidades das Sprints 1 a 4 foram validadas formalmente por meio 
 | Consulta do histórico de notificações | **Concluído** | US #10 implementada e validada formalmente via CT46 em `test_notificacoes_historico.py`. |
 | Identificação de materiais abaixo do mínimo | **Concluído** | US #11 implementada e validada via CT50 em `test_estoque_minimo.py`. |
 | Histórico de movimentações | **Concluído** | US #6 complementada com saídas de pedidos, estornos, cancelamentos e ajustes manuais. |
-| Testes e evidências das alterações recentes | **Concluído** | 111 testes automatizados executados e 100% aprovados, documentados em `sprint-4-evidencias-teste.md`. |
+| Testes e evidências das alterações recentes | **Concluído** | 115 testes automatizados executados e 100% aprovados, documentados em `sprint-4-evidencias-teste.md`. |
 | Código versionado no Git | **Concluído** | Arquivos de teste e documentação organizados para consolidação na branch principal. |
 | Aceite final do MVP | **Aprovado** | Requisitos funcionais das US #1 a #11 atendidos integralmente. |
 
@@ -53,7 +53,7 @@ Todas as funcionalidades das Sprints 1 a 4 foram validadas formalmente por meio 
 
 Com a execução dos testes e atualização documental em 10/11/2026, o quadro de pendências foi atualizado:
 
-1. **Testes Automatizados (CT46, US #6, US #10 e US #11):** **Resolvido.** 43 novos testes foram implementados e integrados à suíte existente, alcançando 111 testes com 100% de aprovação.
+1. **Testes Automatizados (CT46, US #6, US #10, US #11 e Clientes):** **Resolvido.** Novos testes foram implementados e integrados à suíte existente, alcançando 115 testes com 100% de aprovação.
 2. **Documentação e Backlog:** **Resolvido.** `backlog.md`, `plano-de-testes.md`, evidências, relatório e ata da Sprint 4 consolidados.
 3. **Preenchimento dos Códigos de Barras Antigos:** O sistema já disponibiliza a funcionalidade de cadastro e correção administrativa de códigos na tela de estoque, com validações de duplicidade e preservação de histórico (testado em `test_codigo_barras_materiais.py`). O preenchimento dos códigos das bobinas físicas antigas da empresa (7 itens identificados no banco local) fica postergado como **etapa operacional de implantação**, a ser executado diretamente pelo operador no momento do uso prático.
 4. **Homologação Externa do WhatsApp:** A integração e a lógica do conector estão 100% testadas e auditadas em ambiente isolado. O disparo real em produção depende exclusivamente da ativação da conta corporativa e certificado HTTPS no servidor final.

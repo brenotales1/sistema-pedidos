@@ -76,10 +76,10 @@ Nenhum PR deve ser aceito na `main` ou `develop` se: (a) algum teste automatizad
 
 | ID | História (E2) | Cenário | Entrada | Resultado esperado | Prioridade |
 |:---:|:---:|---|---|---|:---:|
-| **CT42** | #7, #8 | Envio de notificação no WhatsApp com sucesso | Pedido atualizado e telefone válido do cliente | Pedido finalizado; HTTP 200/201 com wamid simulado retorna aceito; flash de sucesso; entrega_confirmada permanece falsa | **Alta** |
+| **CT42** | #7, #8 | Envio de notificação no WhatsApp com sucesso | Pedido atualizado para 'Pronto para retirada' e telefone válido do cliente | Pedido com status pronto para retirada; HTTP 200/201 com wamid simulado retorna aceito; flash de sucesso; entrega_confirmada permanece falsa | **Alta** |
 | **CT43** | #8, #9 | Falha ou erro no envio do WhatsApp | Serviço de envio simulando erro (timeout ou API fora) | Sistema avisa que houve erro no envio e não grava como enviado | **Alta** |
 | **CT44** | #7, #8 | Cliente com telefone inválido ou sem número | Pedido com cliente sem telefone ou formato incorreto | Sistema barra o envio e avisa que o telefone precisa ser corrigido | **Alta** |
-| **CT45** | #9 | Envio automático quando o pedido muda de status | Pedido alterado para 'Finalizado' | Sistema dispara automaticamente e registra tentativa vinculada ao histórico; repetir status não reenvia | **Alta** |
+| **CT45** | #9 | Envio automático quando o pedido muda de status | Pedido alterado para 'Pronto para retirada' | Sistema dispara automaticamente e registra tentativa vinculada ao histórico; repetir status não reenvia | **Alta** |
 | **CT46** | #10 | Consulta do histórico de mensagens enviadas | Administrador acessando a tela de histórico `/notificacoes` | Lista tentativas com cliente, pedido, data/hora UTC e status; paginação de 25 registros; bloqueio para funcionário; sem disparo de mensagens | **Média** |
 
 ---
@@ -95,6 +95,8 @@ Nenhum PR deve ser aceito na `main` ou `develop` se: (a) algum teste automatizad
 | **CT51** | — | Regras de cancelamento por status | Cancelamento em Pagamento pendente, Aguardando produção, Pronto para retirada e Finalizado | Permitido nos dois primeiros (estorna saldo e exclui pedido); bloqueado nos dois últimos inclusive via POST direto (preserva pedido e saldo) | **Alta** |
 | **CT52** | #2, #3, #4 | Regularização de códigos de barras antigos | Admin cadastra/corrige código; tentativa por funcionário; consulta e entrada | Admin atualiza; funcionário bloqueado; rejeita vazio, duplicado ou inválido; preserva bobinas e histórico; localiza por busca, API e entrada | **Alta** |
 | **CT53** | #2, #5 | Preservação de saldo na inicialização | Reinício da aplicação (`seed_materials`) com material esgotado ou parcial | Não repõe material com saldo zero nem altera saldos parciais; larguras distintas continuam separadas; consolidação não executa automaticamente | **Média** |
+| **CT54** | — | Validação de duplicidade de cliente por nome | Tentativa de cadastro/edição de cliente com nome já existente | Sistema recusa a operação e informa '{nomedocliente} já possui cadastro' | **Alta** |
+| **CT55** | — | Identificador visual do cliente | Consulta de clientes na listagem e na edição | Sistema exibe o identificador prefixado com '#' (#ID) para distinção visual | **Média** |
 
 ---
 
@@ -120,6 +122,7 @@ A cada entrega de sprint, salvamos os resultados dos testes e prints nas pastas:
 - **#10 (Histórico de notificações):** CT46
 - **#11 (Estoque mínimo):** CT50
 - **Regras de cancelamento seguro:** CT39, CT51
+- **Clientes e identificadores:** CT15–CT19, CT54, CT55
 
 ---
 

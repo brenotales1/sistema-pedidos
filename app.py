@@ -75,7 +75,7 @@ def create_app(test_config=None):
             return "EVENT_RECEIVED", 200
 
     with app.app_context():
-        preparar_banco()
+        preparar_banco(app)
 
     return app
 
@@ -91,13 +91,23 @@ def registrar_rotas(app):
     app.add_url_rule("/", "home", home)
 
 
-def preparar_banco():
+def preparar_banco(app=None):
     """Aplica migracoes, cria tabelas e cadastra dados iniciais."""
     aplicar_migracoes()
     db.create_all()
     seed_materials()
+    if app and not app.testing:
+        from models.usuario import Usuario
+        if not Usuario.query.first():
+            admin = Usuario(nome="Administrador", email="admin@sistema.com", perfil="admin")
+            admin.definir_senha("123456")
+            func = Usuario(nome="Funcionário", email="funcionario@sistema.com", perfil="funcionario")
+            func.definir_senha("123456")
+            db.session.add_all([admin, func])
+            db.session.commit()
 
+
+app = create_app()
 
 if __name__ == "__main__":
-    app = create_app()
     app.run(debug=True)

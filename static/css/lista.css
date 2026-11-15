@@ -155,7 +155,8 @@ body{
     min-width:190px;
 }
 
-.btn{
+.btn,
+.btn-primary{
     background:#27ae60;
     color:white;
     border:none;
@@ -163,10 +164,36 @@ body{
     cursor:pointer;
     border-radius:4px;
     font-weight:bold;
+    text-decoration:none;
+    display:inline-block;
+    font-size:14px;
+    box-sizing:border-box;
 }
 
-.btn:hover{
+.btn:hover,
+.btn-primary:hover{
     background:#1e8449;
+}
+
+.btn-cancelar-form,
+.btn-secondary{
+    background:transparent;
+    color:#555;
+    border:none;
+    padding:8px 15px;
+    cursor:pointer;
+    text-decoration:none;
+    border-radius:4px;
+    display:inline-flex;
+    align-items:center;
+    font-size:14px;
+    box-sizing:border-box;
+}
+
+.btn-cancelar-form:hover,
+.btn-secondary:hover{
+    color:#111;
+    background:#eef1f4;
 }
 
 table{
@@ -242,6 +269,12 @@ h2{
 input, select{
     padding:8px;
     width:100%;
+    box-sizing:border-box;
+}
+
+input[type="checkbox"], input[type="radio"]{
+    width:auto;
+    padding:0;
 }
 
 .btn-sec{

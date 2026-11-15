@@ -12,7 +12,7 @@
         {% endfor %}
     </select>
     <button type="submit" class="btn">Filtrar</button>
-    <a href="{{ url_for('notificacao.historico') }}">Limpar</a>
+    <a href="{{ url_for('notificacao.historico') }}" class="btn-cancelar-form">Limpar</a>
 </form>
 {% if pagina.items %}
 <div style="overflow-x: auto; margin-top: 20px;">

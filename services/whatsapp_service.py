@@ -54,7 +54,7 @@ def notificar_pedido_finalizado(pedido):
     if current_app.config.get("WHATSAPP_ENABLED") is not True:
         return concluir("desabilitado")
 
-    if pedido.status != "Finalizado":
+    if pedido.status != "Pronto para retirada":
         return concluir("status_incompativel")
 
     try:
@@ -101,7 +101,7 @@ def notificar_pedido_finalizado(pedido):
                 "template": template_data
             }
         else:
-            mensagem_texto = f"Olá, {cliente.nome}! Seu pedido #{pedido.id} foi finalizado e está pronto."
+            mensagem_texto = f"Olá, {cliente.nome}! Seu pedido #{pedido.id} está pronto para retirada."
             payload_meta = {
                 "messaging_product": "whatsapp",
                 "recipient_type": "individual",

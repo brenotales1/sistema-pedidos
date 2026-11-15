@@ -101,6 +101,48 @@ class ClientesTestCase(unittest.TestCase):
         self.assertEqual(dados["nome"], "Cliente Expresso")
         self.assertIn("id", dados)
 
+    def test_identificador_cliente(self):
+        """Cliente possui propriedade identificador com prefixo '#'."""
+        with self.app.app_context():
+            cli = Cliente.query.filter_by(nome="Cliente Inicial").first()
+            self.assertEqual(cli.identificador, f"#{cli.id}")
+
+    def test_cadastro_cliente_nome_duplicado(self):
+        """Cadastro com nome ja existente exibe mensagem de cliente ja cadastrado."""
+        response = self.client.post(
+            "/clientes/novo",
+            data={"nome": "Cliente Inicial", "telefone": "11988887777", "empresa": "Outra Empresa"},
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Cliente Inicial já possui cadastro".encode("utf-8"), response.data)
+
+    def test_cadastro_rapido_cliente_nome_duplicado(self):
+        """Cadastro rapido via API JSON com nome duplicado retorna erro 400 com mensagem."""
+        response = self.client.post(
+            "/clientes/rapido",
+            json={"nome": "Cliente Inicial", "telefone": "11988887777", "empresa": "Outra Empresa"},
+        )
+        self.assertEqual(response.status_code, 400)
+        dados = response.get_json()
+        self.assertEqual(dados["erro"], "Cliente Inicial já possui cadastro")
+
+    def test_edicao_cliente_nome_duplicado(self):
+        """Edicao para nome de outro cliente existente exibe erro de cliente ja cadastrado."""
+        with self.app.app_context():
+            outro = Cliente(nome="Segundo Cliente", telefone="11977776666")
+            db.session.add(outro)
+            db.session.commit()
+            outro_id = outro.id
+
+        response = self.client.post(
+            f"/clientes/{outro_id}/editar",
+            data={"nome": "Cliente Inicial", "telefone": "11977776666", "empresa": ""},
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Cliente Inicial já possui cadastro".encode("utf-8"), response.data)
+
 
 if __name__ == "__main__":
     unittest.main()

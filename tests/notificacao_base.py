@@ -48,7 +48,7 @@ class NotificacaoMixin:
                 material_nome="Lona Branca Brilho", largura_pedido_m=1,
                 altura_pedido_m=1, quantidade=1, unidade_medida="m",
                 largura_bobina_usada_m=3.2, orientacao="Padrao",
-                metros_consumidos=1, area_total_m2=1, status="Pronto para retirada")
+                metros_consumidos=1, area_total_m2=1, status="Aguardando produção")
             db.session.add(pedido)
             db.session.commit()
             self.pedido_id, self.cliente_id, self.usuario_id = pedido.id, cliente.id, usuario.id
@@ -61,7 +61,7 @@ class NotificacaoMixin:
             db.session.remove()
             db.drop_all()
 
-    def finalizar(self, status="Finalizado"):
+    def finalizar(self, status="Pronto para retirada"):
         return self.client.post(f"/pedidos/{self.pedido_id}/status",
                                 data={"status": status}, follow_redirects=True)
 

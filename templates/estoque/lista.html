@@ -37,19 +37,21 @@
         aria-label="Buscar material ou código de barras"
     >
 
-    <label><input type="checkbox" name="abaixo_minimo" value="1" {% if abaixo_minimo %}checked{% endif %}> Apenas abaixo do mínimo</label>
-    <button class="btn" type="submit">Buscar</button>
+    <div class="busca-estoque-opcoes">
+        <label><input type="checkbox" name="abaixo_minimo" value="1" {% if abaixo_minimo %}checked{% endif %}> Apenas abaixo do mínimo</label>
+        <button class="btn" type="submit">Buscar</button>
 
-    {% if busca or abaixo_minimo %}
-        <a class="btn-cancelar-form" href="{{ url_for('estoque.lista_estoque') }}">
-            Limpar
-        </a>
-    {% endif %}
+        {% if busca or abaixo_minimo %}
+            <a class="btn-cancelar-form" href="{{ url_for('estoque.lista_estoque') }}">
+                Limpar
+            </a>
+        {% endif %}
+    </div>
 </form>
 
 <div class="codigo-barras-painel">
     <div class="identificar-codigo-barras">
-        <h3>📦 Identificar Material por Código de Barras</h3>
+        <h3>Identificar Material por Código de Barras</h3>
         <p class="estoque-subtitle">Escaneie com o leitor USB ou digite o código para consulta instantânea.</p>
         <div class="identificar-input-grupo">
             <input
@@ -66,7 +68,7 @@
     </div>
 
     <div class="entrada-codigo-barras">
-        <h3>📥 Registrar Entrada de Estoque (Leitor / Código)</h3>
+        <h3>Registrar Entrada de Estoque (Leitor / Código)</h3>
         <p class="estoque-subtitle">Escaneie a bobina e informe a quantidade para dar entrada automática.</p>
         <form class="entrada-input-grupo" method="post" action="{{ url_for('estoque.entrada_estoque') }}">
             <input
@@ -155,7 +157,7 @@
 </form>
 <button class="btn-sec btn-small" type="button" data-editar-estoque="{{ item.id }}">Editar</button>
 <form method="post" action="{{ url_for('estoque.excluir_material', material_id=item.id) }}">
-<button class="btn-lixeira btn-small" type="button" data-excluir-material="{{ item.nome }} ({{ item.largura }})" aria-label="Excluir {{ item.nome }} {{ item.largura }}" title="Excluir {{ item.nome }} {{ item.largura }}">🗑</button>
+<button class="btn-lixeira btn-small" type="button" data-excluir-material="{{ item.nome }} ({{ item.largura }})" aria-label="Excluir {{ item.nome }} {{ item.largura }}" title="Excluir {{ item.nome }} {{ item.largura }}">Excluir</button>
 </form>
 </div>
 <form class="editar-estoque-form" id="editar-estoque-{{ item.id }}" method="post" action="{{ url_for('estoque.editar_metros', material_id=item.id) }}">

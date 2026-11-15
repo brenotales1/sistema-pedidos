@@ -75,6 +75,114 @@
 .cliente-row{
     display:flex;
     gap:10px;
+    align-items:flex-start;
+}
+
+.cliente-busca-wrapper{
+    position:relative;
+    flex:1;
+}
+
+.cliente-busca-wrapper input[type="text"]{
+    padding:8px 12px;
+    width:100%;
+    box-sizing:border-box;
+    border:1px solid #ccc;
+    border-radius:4px;
+}
+
+.cliente-busca-wrapper input[type="text"]:focus{
+    border-color:#27ae60;
+    outline:none;
+    box-shadow:0 0 0 3px rgba(39, 174, 96, 0.15);
+}
+
+.cliente-busca-wrapper input.input-erro{
+    border-color:#e74c3c !important;
+    box-shadow:0 0 0 3px rgba(231, 76, 60, 0.2) !important;
+}
+
+.cliente-resultados-dropdown{
+    position:absolute;
+    top:calc(100% + 4px);
+    left:0;
+    right:0;
+    background:white;
+    border:1px solid #ccd6dd;
+    border-radius:6px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.12);
+    max-height:220px;
+    overflow-y:auto;
+    z-index:50;
+}
+
+.cliente-item-opcao{
+    padding:10px 14px;
+    cursor:pointer;
+    border-bottom:1px solid #f0f2f5;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    transition:background 0.15s;
+}
+
+.cliente-item-opcao:last-child{
+    border-bottom:none;
+}
+
+.cliente-item-opcao:hover,
+.cliente-item-opcao.ativo{
+    background:#eef6f0;
+}
+
+.cliente-item-nome{
+    font-weight:bold;
+    color:#2c3e50;
+    font-size:14px;
+}
+
+.cliente-item-detalhe{
+    font-size:12px;
+    color:#7f8c8d;
+}
+
+.cliente-item-vazio{
+    padding:12px 14px;
+    color:#7f8c8d;
+    font-size:13px;
+    text-align:center;
+}
+
+.cliente-selecionado-tag{
+    margin-top:8px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:#eafaf1;
+    color:#27ae60;
+    padding:5px 10px;
+    border-radius:4px;
+    font-size:13px;
+    border:1px solid #a9dfbf;
+}
+
+.cliente-selecionado-tag strong{
+    color:#1e8449;
+}
+
+.btn-limpar-selecao{
+    background:none;
+    border:none;
+    color:#7f8c8d;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    padding:0 4px;
+    line-height:1;
+}
+
+.btn-limpar-selecao:hover{
+    color:#c0392b;
 }
 
 .cliente-row select{

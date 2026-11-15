@@ -15,7 +15,7 @@ class NotificacaoVisualTestCase(NotificacaoMixin, unittest.TestCase):
         self.assertIn(texto, html)
         self.assertIn(f"flash-message {categoria}", html)
         with self.app.app_context():
-            self.assertEqual(db.session.get(Pedido, self.pedido_id).status, "Finalizado")
+            self.assertEqual(db.session.get(Pedido, self.pedido_id).status, "Pronto para retirada")
             self.assertEqual(NotificacaoWhatsApp.query.one().resultado, resultado)
 
     def test_ct42_flash_sucesso_e_persistencia(self):

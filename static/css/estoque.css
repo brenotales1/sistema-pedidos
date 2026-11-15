@@ -19,6 +19,43 @@
     color:#5f6c7b;
 }
 
+.busca-estoque{
+    background:white;
+    padding:16px 20px;
+    border-radius:8px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+    margin-bottom:18px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.busca-estoque-opcoes{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.busca-estoque label{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+    font-size:14px;
+    color:#2c3e50;
+    user-select:none;
+    margin:0;
+}
+
+.busca-estoque input[type="checkbox"]{
+    width:16px;
+    height:16px;
+    margin:0;
+    cursor:pointer;
+    flex-shrink:0;
+}
+
 .estoque-secao{
     margin-bottom:16px;
     background:white;
@@ -162,10 +199,21 @@
 
 .btn-cancelar-form{
     background:transparent;
-    color:#333;
+    color:#555;
     border:none;
     padding:8px 15px;
     cursor:pointer;
+    text-decoration:none;
+    border-radius:4px;
+    display:inline-flex;
+    align-items:center;
+    font-size:14px;
+    box-sizing:border-box;
+}
+
+.btn-cancelar-form:hover{
+    color:#111;
+    background:#eef1f4;
 }
 
 .btn-small{

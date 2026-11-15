@@ -2,7 +2,7 @@
 
 **Entrega:** E8 — Validação Final do MVP  
 **Data da consolidação:** 10/11/2026  
-**Resultado:** **111 testes executados · 111 aprovados (100% de sucesso) · 0 falhas · 0 erros · 0 regressões**  
+**Resultado:** **115 testes executados · 115 aprovados (100% de sucesso) · 0 falhas · 0 erros · 0 regressões**  
 **Equipe:** Breno Tales de Oliveira Leite (RA: 2840482423029) — Daniel Fredi Soares Pereira (RA: 2840482421054) · Laboratório de Engenharia de Software · ADS Fatec Ribeirão Preto  
 **Desenvolvimento dos testes e execução:** Breno Tales de Oliveira Leite  
 **Implementação dos requisitos validados:** Daniel Fredi Soares Pereira (Commits `695791c` e `652bd8f`)  
@@ -24,7 +24,7 @@ python -B -m unittest discover -s tests -v
 | Arquivo de Teste | Área Funcional / História | Testes Executados | Status |
 |---|---|:---:|:---:|
 | `tests/test_auth.py` | US #1: Autenticação, perfis e permissões | 9 | **Aprovado (100%)** |
-| `tests/test_clientes.py` | Cadastro, edição e listagem de clientes | 5 | **Aprovado (100%)** |
+| `tests/test_clientes.py` | Cadastro, edição, listagem, identificador e duplicidade | 9 | **Aprovado (100%)** |
 | `tests/test_pedidos.py` | Pedidos, vínculos e cálculo de corte | 8 | **Aprovado (100%)** |
 | `tests/test_migracao_cliente.py` | Migração DDL e integridade de clientes | 3 | **Aprovado (100%)** |
 | `tests/test_estoque.py` | US #2, #3, #4, #5: Cadastro, busca e entradas | 22 | **Aprovado (100%)** |
@@ -37,7 +37,7 @@ python -B -m unittest discover -s tests -v
 | **`tests/test_cancelamento_pedido.py`** | **Cancelamento condicional e bloqueios diretos** | **5** | **Aprovado (100%)** |
 | **`tests/test_inicializacao_estoque.py`** | **Inicialização, saldos parciais e consolidação** | **4** | **Aprovado (100%)** |
 | **`tests/test_codigo_barras_materiais.py`** | **Regularização de códigos e preservação de histórico** | **7** | **Aprovado (100%)** |
-| **Total Consolidado** | **Suíte Completa do MVP** | **111** | **100% OK** |
+| **Total Consolidado** | **Suíte Completa do MVP** | **115** | **100% OK** |
 
 ---
 
@@ -103,6 +103,13 @@ python -B -m unittest discover -s tests -v
 - `test_rejeitar_codigo_barras_duplicado`: Rejeita código que já pertença a outro material cadastrado.
 - `test_preservar_estoque_e_historico_ao_alterar_codigo`: A atualização do código de barras mantém intactas as bobinas, o saldo de metros e as movimentações antigas.
 - `test_confirmar_consulta_e_entrada_usando_codigo_salvo`: O novo código é imediatamente localizável na busca `/estoque?busca=...`, na API `/estoque/api/material/codigo/...` e permite dar entrada física via leitor `/estoque/entrada`.
+
+### 2.7. Clientes — Identificador e Validação de Duplicidade (`test_clientes.py`)
+
+- `test_identificador_cliente`: Valida que o modelo `Cliente` possui a propriedade `identificador` formatada com o prefixo (`#ID`).
+- `test_cadastro_cliente_nome_duplicado`: Valida que a tentativa de cadastrar cliente com nome já existente é barrada com a mensagem `{nomedocliente} já possui cadastro`.
+- `test_cadastro_rapido_cliente_nome_duplicado`: Valida que a criação rápida via API JSON retorna erro HTTP 400 com mensagem informativa caso o nome já exista.
+- `test_edicao_cliente_nome_duplicado`: Valida que a alteração de nome de cliente para outro já cadastrado é barrada mantendo integridade.
 
 ---
 
@@ -221,7 +228,7 @@ test_testing_bloqueia_mesmo_com_configuracao_valida (test_whatsapp.WhatsAppTestC
 test_webhook_verificacao_e_recebimento_sem_confirmar_entrega (test_whatsapp.WhatsAppTestCase) ... ok
 
 ----------------------------------------------------------------------
-Ran 111 tests in 15.746s
+Ran 115 tests in 17.042s
 
 OK
 ```

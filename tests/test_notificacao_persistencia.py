@@ -20,8 +20,8 @@ class NotificacaoPersistenciaTestCase(NotificacaoMixin, unittest.TestCase):
             self.assertEqual(tentativa.cliente_id, self.cliente_id)
             self.assertEqual(tentativa.historico_status_id, historico.id)
             self.assertEqual(historico.usuario_id, self.usuario_id)
-            self.assertEqual(historico.status_anterior, "Pronto para retirada")
-            self.assertEqual(historico.novo_status, "Finalizado")
+            self.assertEqual(historico.status_anterior, "Aguardando produção")
+            self.assertEqual(historico.novo_status, "Pronto para retirada")
             self.assertEqual(tentativa.evento, "pedido_finalizado")
             self.assertIsNotNone(tentativa.data_hora)
             self.assertEqual(tentativa.resultado, "aceito")
@@ -42,8 +42,8 @@ class NotificacaoPersistenciaTestCase(NotificacaoMixin, unittest.TestCase):
                     self.assertEqual(tentativa.codigo_erro, codigo)
                     self.assertIsNone(tentativa.message_sid)
                     self.assertFalse(tentativa.entrega_confirmada)
-                    self.assertEqual(db.session.get(Pedido, self.pedido_id).status, "Finalizado")
-                self.finalizar("Pronto para retirada")
+                    self.assertEqual(db.session.get(Pedido, self.pedido_id).status, "Pronto para retirada")
+                self.finalizar("Aguardando produção")
 
     def test_ct43_erro_rede_persistido(self):
         self.envio_simulado_habilitado()
@@ -55,7 +55,7 @@ class NotificacaoPersistenciaTestCase(NotificacaoMixin, unittest.TestCase):
             self.assertEqual(tentativa.resultado, "falha")
             self.assertIsNone(tentativa.codigo_erro)
             self.assertIsNone(tentativa.message_sid)
-            self.assertEqual(db.session.get(Pedido, self.pedido_id).status, "Finalizado")
+            self.assertEqual(db.session.get(Pedido, self.pedido_id).status, "Pronto para retirada")
 
     def test_ct45_repetir_status_nao_duplica_nem_reenvia(self):
         self.envio_simulado_habilitado()
@@ -73,7 +73,7 @@ class NotificacaoPersistenciaTestCase(NotificacaoMixin, unittest.TestCase):
         with self.app.app_context():
             self.assertEqual(NotificacaoWhatsApp.query.count(), 0)
         self.finalizar()
-        self.finalizar("Pronto para retirada")
+        self.finalizar("Pagamento pendente")
         self.finalizar()
         self.assertEqual(self.post.call_count, 2)
         with self.app.app_context():

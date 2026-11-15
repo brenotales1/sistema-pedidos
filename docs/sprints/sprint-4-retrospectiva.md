@@ -12,7 +12,7 @@
 | Implementar consulta administrativa do histórico de notificações (US #10 / CT46) | Daniel Fredi | Sim | Rota `/notificacoes` implementada no commit `695791c`, com paginação de 25 registros, filtros por status e validação estrita de perfil administrador. |
 | Validar a identificação de materiais e a entrada de estoque por código de barras | Daniel Fredi e Breno Tales | Sim | Implementado suporte a digitação e leitor USB no commit `695791c`, complementado com testes de busca, API e entrada em `test_codigo_barras_materiais.py`. |
 | Corrigir possíveis erros e realizar os ajustes finais nas funcionalidades de pedidos, clientes e estoque | Daniel Fredi | Sim | Regras de cancelamento seguro (bloqueio para pedidos prontos e finalizados), alertas de estoque mínimo estrito (US #11) e garantia de atomicidade no histórico de movimentações (US #6) no commit `652bd8f`. |
-| Desenvolver e executar os testes automatizados e registrar as evidências de funcionamento do sistema | Breno Tales | Sim | 43 novos testes unitários e de integração desenvolvidos por Breno, totalizando 111 testes automatizados aprovados (100% de sucesso). Registrado em `sprint-4-evidencias-teste.md`. |
+| Desenvolver e executar os testes automatizados e registrar as evidências de funcionamento do sistema | Breno Tales | Sim | Testes unitários e de integração desenvolvidos e consolidados por Breno, totalizando 115 testes automatizados aprovados (100% de sucesso). Registrado em `sprint-4-evidencias-teste.md`. |
 | Revisar os requisitos obrigatórios (Must Have) e verificar o atendimento aos critérios de aceite do MVP | Breno Tales e Daniel Fredi | Sim | Todos os requisitos Must e Should foram validados contra o termo de aceite e revisados em `sprint-4-revisao-mvp.md`. |
 | Atualizar a documentação técnica, os relatórios e as evidências da Sprint 4 | Breno Tales | Sim | `backlog.md`, `plano-de-testes.md`, relatórios e atas consolidados na pasta `docs/`. |
 | Preparar a apresentação e a demonstração do sistema para a avaliação final | Breno Tales e Daniel Fredi | Sim | Roteiro de demonstração estruturado cobrindo o fluxo completo: login, cadastro, leitor de código de barras, cálculo de corte, pedido, cancelamento e histórico WhatsApp. |
@@ -21,7 +21,7 @@
 
 ## 2. O que funcionou bem
 
-- **Robustez dos Testes Automatizados:** A criação de 43 novos testes unitários e de integração elevou a suíte para 111 testes, cobrindo integralmente as regras de transação, cancelamento e permissões com zero regressões.
+- **Robustez dos Testes Automatizados:** A suíte de testes unitários e de integração alcançou 115 testes, cobrindo integralmente as regras de transação, cancelamento, validação de clientes e permissões com zero regressões.
 - **Isolamento e Segurança de Dados:** As travas de cancelamento e a política de histórico atômico impedem qualquer inconsistência entre saldo de estoque e histórico de movimentações.
 - **Usabilidade do Estoque Mínimo:** A exibição com alerta condicional e o filtro `?abaixo_minimo=1` facilitam diretamente a tomada de decisão para compras e reposição de bobinas.
 - **Consulta de Notificações sem Efeitos Colaterais:** A tela de histórico (CT46) foi construída de forma estritamente somente-leitura, garantindo que consultas administrativas nunca disparem envios acidentais.

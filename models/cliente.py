@@ -12,3 +12,8 @@ class Cliente(db.Model):
     nome = db.Column(db.String(120), nullable=False)
     telefone = db.Column(db.String(20), nullable=True)
     empresa = db.Column(db.String(120), nullable=True)
+
+    @property
+    def identificador(self):
+        """Retorna o identificador formatado do cliente."""
+        return f"#{self.id}"

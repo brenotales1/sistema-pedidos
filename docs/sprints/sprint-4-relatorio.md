@@ -17,7 +17,7 @@
 | **Regularização de códigos de barras antigos** | Sim | Sim | Cadastro e correção de códigos de barras na tela de estoque pelo administrador, com validações de duplicidade e formato, preservando histórico de bobinas e movimentações. CT52. |
 | **Inicialização segura de estoque** | Sim | Sim | Reinicialização (`seed_materials`) preserva materiais esgotados (saldo zero) e saldos parciais; não executa consolidação automática. CT53. |
 
-**Meta técnica entregue:** 100% dos requisitos Must Have e Should Have do escopo do MVP implementados e cobertos por testes automatizados. Daniel Fredi implementou as funcionalidades, rotas, telas e migrações nos commits `695791c` (07/11/2026) e `652bd8f` (09/11/2026); Breno Tales desenvolveu os 43 testes automatizados de validação (CT46–CT53), executou a suíte completa de 111 testes (100% aprovados sem regressões) e consolidou a documentação de encerramento do MVP.
+**Meta técnica entregue:** 100% dos requisitos Must Have e Should Have do escopo do MVP implementados e cobertos por testes automatizados. Daniel Fredi implementou as funcionalidades, rotas, telas e migrações nos commits `695791c` (07/11/2026) e `652bd8f` (09/11/2026); Breno Tales desenvolveu os testes automatizados de validação (CT46–CT53 e regras de clientes), executou a suíte completa de 115 testes (100% aprovados sem regressões) e consolidou a documentação de encerramento do MVP.
 
 ---
 
@@ -41,7 +41,7 @@ Todas as histórias obrigatórias (Must Have) e de alto valor (Should Have) fora
 
 ## 4. Evidências de teste
 
-A suíte completa atingiu **111 testes automatizados**, todos aprovados com isolamento de banco de dados e simulação controlada de integrações externas:
+A suíte completa atingiu **115 testes automatizados**, todos aprovados com isolamento de banco de dados e simulação controlada de integrações externas:
 - Comando de execução: `python -B -m unittest discover -s tests -v`
 - O detalhamento completo da execução e o log integral constam em [Evidências da Sprint 4](sprint-4-evidencias-teste.md).
 

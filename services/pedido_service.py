@@ -150,7 +150,7 @@ def atualizar_status_com_notificacao(pedido, novo_status, usuario_id=None):
                 pedido_id=pedido.id, status_anterior=anterior,
                 novo_status=novo_status, usuario_id=usuario_id)
             db.session.add(historico)
-            if novo_status == "Finalizado":
+            if novo_status == "Pronto para retirada":
                 tentativa = NotificacaoWhatsApp(
                     historico_status=historico, pedido_id=pedido.id,
                     cliente_id=pedido.cliente_id, evento="pedido_finalizado")
@@ -159,14 +159,14 @@ def atualizar_status_com_notificacao(pedido, novo_status, usuario_id=None):
     except Exception:
         db.session.rollback()
         raise
-    if resultado.rowcount == 1 and novo_status == "Finalizado":
+    if resultado.rowcount == 1 and novo_status == "Pronto para retirada":
         db.session.refresh(pedido)
         notificacao = notificar_pedido_finalizado(pedido)
         if not registrar_resultado_notificacao(tentativa, notificacao):
             from services.whatsapp_service import ResultadoEnvio
             return ResultadoEnvio("registro_pendente")
         return notificacao
-    current_app.logger.info("WhatsApp transicao: pedido=%s envio_solicitado=False resultado=sem_transicao_para_finalizado", pedido.id)
+    current_app.logger.info("WhatsApp transicao: pedido=%s envio_solicitado=False resultado=sem_transicao_para_pronto", pedido.id)
 
 
 def registrar_resultado_notificacao(tentativa, resultado):

@@ -9,7 +9,7 @@ from services.whatsapp_service import normalizar_telefone, notificar_pedido_fina
 
 
 class WhatsAppTestCase(NotificacaoMixin, unittest.TestCase):
-    def enviar(self, telefone="11999999999", status="Finalizado", vinculado=True):
+    def enviar(self, telefone="11999999999", status="Pronto para retirada", vinculado=True):
         pedido = SimpleNamespace(id=42, status=status, cliente_id=1 if vinculado else None,
                                  cliente=SimpleNamespace(nome="Cliente Ficticio", telefone=telefone))
         with self.app.app_context():
@@ -100,7 +100,7 @@ class WhatsAppTestCase(NotificacaoMixin, unittest.TestCase):
         self.app.config["WHATSAPP_ENABLED"] = False
         self.assertEqual(self.enviar().status, "desabilitado")
         self.app.config["WHATSAPP_ENABLED"] = True
-        self.assertEqual(self.enviar(status="Pronto para retirada").status, "status_incompativel")
+        self.assertEqual(self.enviar(status="Finalizado").status, "status_incompativel")
         for chave in ("META_ACCESS_TOKEN", "META_PHONE_NUMBER_ID"):
             with self.subTest(chave=chave), patch.dict(os.environ, {chave: ""}):
                 self.assertEqual(self.enviar().status, "configuracao_invalida")

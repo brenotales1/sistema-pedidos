@@ -292,15 +292,15 @@ def atualizar_status_pedido(id):
         resultado = atualizar_status_com_notificacao(pedido, status, usuario_id=session.get("usuario_id"))
         if resultado is not None:
             mensagens = {
-                "registro_pendente": ("Pedido finalizado. O resultado da notificacao nao foi salvo; confira o historico antes de tentar outro envio.", "erro"),
-                "aceito": ("Pedido finalizado. Notificação do WhatsApp disparada com sucesso! Aceita pela API; entrega ainda não confirmada.", "sucesso"),
-                "desabilitado": ("Pedido finalizado. O envio de notificações pelo WhatsApp está desativado.", "info"),
-                "bloqueado_testing": ("Pedido finalizado. Notificação bloqueada no ambiente de testes.", "info"),
-                "sem_destinatario": ("Pedido finalizado. Notificação não enviada: verifique o telefone cadastrado do cliente.", "erro"),
-                "configuracao_invalida": ("Pedido finalizado. Notificação não enviada: serviço de WhatsApp indisponível.", "erro"),
+                "registro_pendente": ("Pedido pronto para retirada. O resultado da notificacao nao foi salvo; confira o historico antes de tentar outro envio.", "erro"),
+                "aceito": ("Pedido pronto para retirada. Notificação do WhatsApp disparada com sucesso! Aceita pela API; entrega ainda não confirmada.", "sucesso"),
+                "desabilitado": ("Pedido pronto para retirada. O envio de notificações pelo WhatsApp está desativado.", "info"),
+                "bloqueado_testing": ("Pedido pronto para retirada. Notificação bloqueada no ambiente de testes.", "info"),
+                "sem_destinatario": ("Pedido pronto para retirada. Notificação não enviada: verifique o telefone cadastrado do cliente.", "erro"),
+                "configuracao_invalida": ("Pedido pronto para retirada. Notificação não enviada: serviço de WhatsApp indisponível.", "erro"),
             }
             mensagem, categoria = mensagens.get(resultado.status, (
-                "Pedido finalizado. Não foi possível confirmar a notificação pelo WhatsApp.", "erro"))
+                "Pedido pronto para retirada. Não foi possível confirmar a notificação pelo WhatsApp.", "erro"))
             flash(mensagem, categoria)
     except ValueError as erro:
         flash(str(erro), "erro")

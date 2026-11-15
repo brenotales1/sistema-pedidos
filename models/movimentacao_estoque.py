@@ -1,7 +1,13 @@
 """Modelo de dados para historico de movimentacoes de estoque."""
 
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from database.db import db
+
+try:
+    from zoneinfo import ZoneInfo
+    FUSO_BRASILIA = ZoneInfo("America/Sao_Paulo")
+except Exception:
+    FUSO_BRASILIA = timezone(timedelta(hours=-3))
 
 
 class MovimentacaoEstoque(db.Model):
@@ -23,5 +29,10 @@ class MovimentacaoEstoque(db.Model):
 
     @property
     def data_hora_formatada(self):
-        """Retorna a data e hora formatada em padrao brasileiro."""
-        return self.data_hora.strftime("%d/%m/%Y %H:%M")
+        """Retorna a data e hora formatada no horario de Brasilia (UTC-3)."""
+        if not self.data_hora:
+            return ""
+        dt = self.data_hora
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(FUSO_BRASILIA).strftime("%d/%m/%Y %H:%M")
