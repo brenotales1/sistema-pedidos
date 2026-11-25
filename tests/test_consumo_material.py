@@ -282,6 +282,19 @@ class ConsumoMaterialTestCase(unittest.TestCase):
                     db.session.rollback()
             self.assertEqual(ConsumoMaterial.query.count(), 1)
 
+    def test_consulta_agregada_sql_group_by_join(self):
+        """Verifica a consulta agregada SQL com GROUP BY e JOIN de 4 tabelas."""
+        from services.material_service import obter_relatorio_consumo_agregado_sql
+        self.criar()
+        with self.app.app_context():
+            resultados = obter_relatorio_consumo_agregado_sql()
+            self.assertGreater(len(resultados), 0)
+            primeiro = resultados[0]
+            self.assertEqual(primeiro.cliente_nome, "Cliente NN")
+            self.assertGreater(primeiro.total_metros, 0)
+            self.assertGreaterEqual(primeiro.total_pedidos, 1)
+
 
 if __name__ == "__main__":
+
     unittest.main()
