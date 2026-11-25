@@ -141,3 +141,27 @@ def seed_materials():
 
     # Consolidacao de cadastros existentes deve ser uma operacao explicita,
     # nunca um efeito colateral de iniciar a aplicacao.
+
+
+def obter_relatorio_consumo_agregado_sql():
+    """Consulta agregada em SQL com GROUP BY e JOIN de 4 tabelas
+    (Cliente, Pedido, ConsumoMaterial e Material) para totalizar o
+    consumo em metros por categoria e cliente diretamente pelo banco."""
+    from sqlalchemy import func
+    from models.cliente import Cliente
+    from models.consumo_material import ConsumoMaterial
+
+    return (
+        db.session.query(
+            Cliente.nome.label("cliente_nome"),
+            Material.categoria.label("categoria_material"),
+            func.sum(ConsumoMaterial.quantidade_metros).label("total_metros"),
+            func.count(func.distinct(Pedido.id)).label("total_pedidos"),
+        )
+        .join(Pedido, ConsumoMaterial.pedido_id == Pedido.id)
+        .join(Material, ConsumoMaterial.material_id == Material.id)
+        .join(Cliente, Pedido.cliente_id == Cliente.id)
+        .group_by(Cliente.nome, Material.categoria)
+        .all()
+    )
+

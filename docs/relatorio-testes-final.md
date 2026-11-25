@@ -22,7 +22,7 @@
 | Taxa de sucesso da suíte | 100% |
 | Duração informada pelo runner | 18,575 segundos |
 | Cobertura automatizada (linhas/branches) | Não mensurada; ferramenta coverage não instalada no ambiente |
-| Aceite do cliente/PO | Aceito pelo PO; assinatura pendente |
+| Aceite do cliente real | Homologado sem ressalvas por Paulo Rogério Leite (Center Comunicação Visual) |
 
 A execução confirma a regressão dos módulos de autenticação, clientes, pedidos, estoque, notificações e consumo N:N. Os cenários negativos aprovados comprovam que o sistema rejeita entradas ou operações inválidas como esperado; não representam testes falhos. A taxa de 100% refere-se aos testes executados, sem significar cobertura total do código.
 
@@ -294,14 +294,15 @@ Nenhum teste falhou. Registramos abaixo os avisos de manutenção observados dur
 
 ---
 
-## 5. Testes de aceitação com cliente/PO
+## 5. Testes de aceitação com cliente real e PO
 
-**Cliente/PO:** Breno Tales de Oliveira Leite, dono do produto conforme E2b.<br>
+**Cliente Real / Homologador:** Paulo Rogério Leite, Proprietário da Center Comunicação Visual.<br>
+**Product Owner da Equipe:** Breno Tales de Oliveira Leite.<br>
 **Data da avaliação:** 15/11/2026.<br>
-**Participantes:** Breno Tales de Oliveira Leite (RA: 2840482423029) e Daniel Fredi Soares Pereira (RA: 2840482421054).<br>
-**Resultado:** escopo aceito sem ressalvas pelo PO.
+**Participantes:** Paulo Rogério Leite (Cliente Real), Breno Tales de Oliveira Leite (RA: 2840482423029) e Daniel Fredi Soares Pereira (RA: 2840482421054).<br>
+**Resultado:** escopo aceito sem ressalvas pelo cliente real e validado pela equipe.
 
-| ID | Área avaliada | Referência E2b | Resultado e evidência | Parecer do PO |
+| ID | Área avaliada | Referência E2b | Resultado e evidência | Parecer do Cliente Real |
 |---|---|---|---|---|
 | AM01 | Autenticação e permissões | 1 | Suíte aprovada: login, sessão, permissões e bloqueios por perfil | Aceito |
 | AM02 | Cadastro, consulta e identificação de materiais | 2, 3, 4 | Suíte aprovada: códigos válidos e inexistentes, duplicidade e busca | Aceito |
